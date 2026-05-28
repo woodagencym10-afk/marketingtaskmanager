@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Portal — База Знань</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     HEADER
+══════════════════════════════════ -->
+<header class="p-header">
+  <a class="p-logo" href="index.html">
+    <div class="p-logo-mark">MKT</div>
+    <div class="p-logo-text">Marketing <span>Portal</span></div>
+  </a>
+  <div class="p-header-sep"></div>
+  <nav class="p-nav">
+    <a href="index.html"    class="p-nav-btn"><span class="nav-icon">📋</span> Задачі</a>
+    <a href="knowledge.html" class="p-nav-btn active"><span class="nav-icon">📚</span> База знань</a>
+  </nav>
+  <div class="p-header-right">
+    <div class="p-loading" id="loading">Оновлення...</div>
+    <div class="p-user-badge">
+      <div class="p-user-avatar" id="user-avatar-initial">?</div>
+      <span id="user-badge">—</span>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="logout()">Вийти</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════
+     PAGE
+══════════════════════════════════ -->
+<div class="p-page">
+
+  <div style="margin-bottom:24px">
+    <h1 style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--text-hi);margin-bottom:4px">База Знань</h1>
+    <p style="font-size:14px;color:var(--text-lo)">Централізований доступ до всіх маркетингових інструкцій, креативів та регламентів</p>
+  </div>
+
+  <div class="p-main-layout">
+
+    <!-- Left: search + grid -->
+    <div>
+      <div class="p-search-wrap">
+        <span class="p-search-icon">🔍</span>
+        <input type="text" class="p-input p-search" id="search-kb"
+               oninput="renderKnowledge()"
+               placeholder="Шукати за назвою, темою або описом...">
+      </div>
+
+      <div class="kb-grid" id="kb-container">
+        <div class="p-empty">Завантаження...</div>
+      </div>
+    </div>
+
+    <!-- Right: add form -->
+    <div class="kb-form-card">
+      <div class="kb-form-title">➕ Додати статтю</div>
+
+      <div class="p-field">
+        <label class="p-label">Назва статті</label>
+        <input class="p-input" type="text" id="kb-title" placeholder="Наприклад: Налаштування UTM-міток">
+      </div>
+      <div class="p-field">
+        <label class="p-label">Категорія</label>
+        <input class="p-input" type="text" id="kb-category" placeholder="SMM, PPC, Дизайн або CRM">
+      </div>
+      <div class="p-field">
+        <label class="p-label">Короткий опис</label>
+        <textarea class="p-textarea" id="kb-desc" rows="3" placeholder="Про що ця інструкція?"></textarea>
+      </div>
+      <div class="p-field">
+        <label class="p-label">Посилання на Google Doc</label>
+        <input class="p-input" type="url" id="kb-url" placeholder="https://docs.google.com/...">
+      </div>
+
+      <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="submitKbForm()">
+        Зберегти статтю
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DOC MODAL
+══════════════════════════════════ -->
+<div id="doc-modal" class="p-modal-overlay" onclick="handleModalClick(event)">
+  <div class="kb-modal-box">
+    <div class="kb-modal-header">
+      <div class="kb-modal-title" id="modal-title">Документ</div>
+      <button class="p-modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="kb-iframe-wrap">
+      <div class="kb-iframe-loading" id="iframe-loading">
+        <span style="font-size:28px">📄</span>
+        Відкриваємо документ...
+      </div>
+      <iframe id="doc-iframe" src="" onload="document.getElementById('iframe-loading').style.display='none'"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Auth check */
+  const token    = localStorage.getItem('userToken');
+  const userName = localStorage.getItem('userName');
+  const userRole = localStorage.getItem('userRole');
+  if (!token) { window.location.href = 'index.html'; }
+
+  const badge = document.getElementById('user-badge');
+  if (badge && userName) badge.textContent = userName + ' · ' + userRole;
+  const av = document.getElementById('user-avatar-initial');
+  if (av && userName) av.textContent = userName[0].toUpperCase();
+
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyOTEc7GxwlQJTXehW6zmDbSdFkwBswC9mIGdknwEufNIpeYrAjaSuhXw5rW3Is60ME/exec';
+  let allKnowledge = [];
+
+  function showLoading(v) { document.getElementById('loading').style.display = v ? 'block' : 'none'; }
+
+  function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+  function getInitials(name) {
+    const p = (name||'').trim().split(/\s+/);
+    return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : (name||'?')[0].toUpperCase();
+  }
+
+  function getPreviewUrl(url) {
+    if (!url) return '';
+    return (url.includes('docs.google.com') && url.includes('/edit'))
+      ? url.replace(/\/edit.*$/, '/preview?rm=minimal')
+      : url;
+  }
+
+  function openModal(url, title) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('iframe-loading').style.display = 'flex';
+    document.getElementById('doc-iframe').src = getPreviewUrl(url);
+    document.getElementById('doc-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('doc-modal').classList.remove('open');
+    document.getElementById('doc-iframe').src = '';
+    document.body.style.overflow = '';
+  }
+
+  function handleModalClick(e) {
+    if (e.target === document.getElementById('doc-modal')) closeModal();
+  }
+
+  window.onload = loadKnowledge;
+
+  async function loadKnowledge() {
+    const cached = localStorage.getItem('mkt_knowledge_cache');
+    if (cached) { allKnowledge = JSON.parse(cached); renderKnowledge(); }
+    showLoading(true);
+    try {
+      const res    = await fetch(API_URL + '?action=getKnowledge&token=' + encodeURIComponent(token));
+      const result = await res.json();
+      if (result.success) {
+        allKnowledge = result.data || [];
+        localStorage.setItem('mkt_knowledge_cache', JSON.stringify(allKnowledge));
+        renderKnowledge();
+      } else if (!cached) {
+        document.getElementById('kb-container').innerHTML =
+          '<div class="p-empty">Помилка авторизації. <a href="index.html" style="color:var(--accent)">Увійдіть знову</a></div>';
+      }
+    } catch(e) {
+      console.error(e);
+      if (!cached)
+        document.getElementById('kb-container').innerHTML =
+          '<div class="p-empty">Помилка завантаження. Перевірте з\'єднання.</div>';
+    }
+    showLoading(false);
+  }
+
+  function renderKnowledge() {
+    const container = document.getElementById('kb-container');
+    container.innerHTML = '';
+    const q = document.getElementById('search-kb').value.toLowerCase();
+    const filtered = allKnowledge.filter(item => {
+      if (!item['Назва статті']) return false;
+      return (item['Назва статті']||'').toLowerCase().includes(q)
+          || (item['Категорія']  ||'').toLowerCase().includes(q)
+          || (item['Короткий опис']||'').toLowerCase().includes(q);
+    });
+
+    if (!filtered.length) {
+      container.innerHTML = `<div class="p-empty">${q
+        ? `Нічого не знайдено за запитом «${q}»`
+        : 'Поки що жодних інструкцій немає. Додайте першу!'}</div>`;
+      return;
+    }
+
+    filtered.forEach(item => {
+      const title  = item['Назва статті']           || '';
+      const url    = item['Посилання на Google Doc'] || '';
+      const author = item['Автор (хто додав)']       || 'Marketing';
+
+      const card = document.createElement('div');
+      card.className = 'kb-card';
+
+      card.innerHTML = `
+        <div class="kb-cat">${item['Категорія']||'Інше'}</div>
+        <div class="kb-title">${title}</div>
+        <div class="kb-desc">${item['Короткий опис']||''}</div>
+        <div class="kb-footer">
+          <div class="kb-author">
+            <div class="p-avatar p-avatar-lg" style="background:var(--sky-dim);color:var(--sky)">${getInitials(author)}</div>
+            <span class="kb-author-name">${author}</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-url="${url}" data-title="${title}">Читати →</button>
+        </div>`;
+
+      card.querySelector('button').addEventListener('click', function(e) {
+        e.stopPropagation();
+        openModal(this.dataset.url, this.dataset.title);
+      });
+      card.addEventListener('click', () => openModal(url, title));
+      container.appendChild(card);
+    });
+  }
+
+  async function submitKbForm() {
+    const title    = document.getElementById('kb-title').value.trim();
+    const category = document.getElementById('kb-category').value.trim();
+    const desc     = document.getElementById('kb-desc').value.trim();
+    const url      = document.getElementById('kb-url').value.trim();
+
+    if (!title || !category || !desc || !url) { alert('Заповніть всі поля!'); return; }
+
+    showLoading(true);
+    try {
+      const res    = await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'addKnowledge', token, title, category, description:desc, docUrl:url, author:userName||'Marketing' })
+      });
+      const result = await res.json();
+      if (result.success) {
+        ['kb-title','kb-category','kb-desc','kb-url'].forEach(id => document.getElementById(id).value='');
+        localStorage.removeItem('mkt_knowledge_cache');
+        await loadKnowledge();
+        alert('✅ Статтю додано успішно!');
+      } else {
+        alert('Помилка: ' + (result.error||'Невідома помилка'));
+      }
+    } catch(err) {
+      console.error(err); alert('Помилка сервера. Спробуйте ще раз.');
+    }
+    showLoading(false);
+  }
+
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
