@@ -20,7 +20,7 @@
   </a>
   <div class="p-header-sep"></div>
   <nav class="p-nav">
-    <a href="index.html"    class="p-nav-btn"><span class="nav-icon">📋</span> Задачі</a>
+    <a href="index.html"     class="p-nav-btn"><span class="nav-icon">📋</span> Задачі</a>
     <a href="knowledge.html" class="p-nav-btn active"><span class="nav-icon">📚</span> База знань</a>
   </nav>
   <div class="p-header-right">
@@ -76,8 +76,8 @@
         <textarea class="p-textarea" id="kb-desc" rows="3" placeholder="Про що ця інструкція?"></textarea>
       </div>
       <div class="p-field">
-        <label class="p-label">Посилання на Google Doc</label>
-        <input class="p-input" type="url" id="kb-url" placeholder="https://docs.google.com/...">
+        <label class="p-label">Посилання на Google Doc або Drive папку</label>
+        <input class="p-input" type="url" id="kb-url" placeholder="https://docs.google.com/... або https://drive.google.com/...">
       </div>
 
       <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="submitKbForm()">
@@ -89,7 +89,7 @@
 </div>
 
 <!-- ══════════════════════════════════
-     DOC MODAL
+     DOC MODAL (тільки для Google Docs)
 ══════════════════════════════════ -->
 <div id="doc-modal" class="p-modal-overlay" onclick="handleModalClick(event)">
   <div class="kb-modal-box">
@@ -108,7 +108,7 @@
 </div>
 
 <script>
-  /* Auth check */
+  /* ── Auth check ── */
   const token    = localStorage.getItem('userToken');
   const userName = localStorage.getItem('userName');
   const userRole = localStorage.getItem('userRole');
@@ -123,12 +123,17 @@
   let allKnowledge = [];
 
   function showLoading(v) { document.getElementById('loading').style.display = v ? 'block' : 'none'; }
-
   function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
   function getInitials(name) {
-    const p = (name||'').trim().split(/\s+/);
-    return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : (name||'?')[0].toUpperCase();
+    const p = (name || '').trim().split(/\s+/);
+    return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : (name || '?')[0].toUpperCase();
+  }
+
+  /* ── Визначити тип посилання ── */
+  function isDriveFolder(url) {
+    if (!url) return false;
+    return url.includes('/folders/') || (url.includes('drive.google.com') && !url.includes('docs.google.com'));
   }
 
   function getPreviewUrl(url) {
@@ -138,7 +143,12 @@
       : url;
   }
 
+  /* ── Модальне вікно (тільки для docs) ── */
   function openModal(url, title) {
+    if (isDriveFolder(url)) {
+      window.open(url, '_blank');
+      return;
+    }
     document.getElementById('modal-title').textContent = title;
     document.getElementById('iframe-loading').style.display = 'flex';
     document.getElementById('doc-iframe').src = getPreviewUrl(url);
@@ -173,7 +183,7 @@
         document.getElementById('kb-container').innerHTML =
           '<div class="p-empty">Помилка авторизації. <a href="index.html" style="color:var(--accent)">Увійдіть знову</a></div>';
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       if (!cached)
         document.getElementById('kb-container').innerHTML =
@@ -188,9 +198,9 @@
     const q = document.getElementById('search-kb').value.toLowerCase();
     const filtered = allKnowledge.filter(item => {
       if (!item['Назва статті']) return false;
-      return (item['Назва статті']||'').toLowerCase().includes(q)
-          || (item['Категорія']  ||'').toLowerCase().includes(q)
-          || (item['Короткий опис']||'').toLowerCase().includes(q);
+      return (item['Назва статті']  || '').toLowerCase().includes(q)
+          || (item['Категорія']     || '').toLowerCase().includes(q)
+          || (item['Короткий опис'] || '').toLowerCase().includes(q);
     });
 
     if (!filtered.length) {
@@ -201,26 +211,35 @@
     }
 
     filtered.forEach(item => {
-      const title  = item['Назва статті']           || '';
-      const url    = item['Посилання на Google Doc'] || '';
-      const author = item['Автор (хто додав)']       || 'Marketing';
+      const title  = item['Назва статті']            || '';
+      const url    = item['Посилання на Google Doc']  || '';
+      const author = item['Автор (хто додав)']        || 'Marketing';
+
+      /* визначаємо тип для кнопки і значка */
+      const isFolder   = isDriveFolder(url);
+      const btnLabel   = isFolder ? '📁 Відкрити папку' : 'Читати →';
+      const typeIcon   = isFolder ? '🗂️' : '📄';
+      const typeBadge  = isFolder ? 'Drive папка' : 'Google Doc';
 
       const card = document.createElement('div');
       card.className = 'kb-card';
 
       card.innerHTML = `
-        <div class="kb-cat">${item['Категорія']||'Інше'}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div class="kb-cat">${item['Категорія'] || 'Інше'}</div>
+          <div class="kb-cat" style="background:var(--bg-3);color:var(--text-lo);font-size:10px">${typeIcon} ${typeBadge}</div>
+        </div>
         <div class="kb-title">${title}</div>
-        <div class="kb-desc">${item['Короткий опис']||''}</div>
+        <div class="kb-desc">${item['Короткий опис'] || ''}</div>
         <div class="kb-footer">
           <div class="kb-author">
             <div class="p-avatar p-avatar-lg" style="background:var(--sky-dim);color:var(--sky)">${getInitials(author)}</div>
             <span class="kb-author-name">${author}</span>
           </div>
-          <button class="btn btn-ghost btn-sm" data-url="${url}" data-title="${title}">Читати →</button>
+          <button class="btn btn-ghost btn-sm" data-url="${url}" data-title="${title}">${btnLabel}</button>
         </div>`;
 
-      card.querySelector('button').addEventListener('click', function(e) {
+      card.querySelector('button').addEventListener('click', function (e) {
         e.stopPropagation();
         openModal(this.dataset.url, this.dataset.title);
       });
@@ -240,26 +259,26 @@
     showLoading(true);
     try {
       const res    = await fetch(API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'addKnowledge', token, title, category, description:desc, docUrl:url, author:userName||'Marketing' })
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'addKnowledge', token, title, category, description: desc, docUrl: url, author: userName || 'Marketing' })
       });
       const result = await res.json();
       if (result.success) {
-        ['kb-title','kb-category','kb-desc','kb-url'].forEach(id => document.getElementById(id).value='');
+        ['kb-title', 'kb-category', 'kb-desc', 'kb-url'].forEach(id => document.getElementById(id).value = '');
         localStorage.removeItem('mkt_knowledge_cache');
         await loadKnowledge();
         alert('✅ Статтю додано успішно!');
       } else {
-        alert('Помилка: ' + (result.error||'Невідома помилка'));
+        alert('Помилка: ' + (result.error || 'Невідома помилка'));
       }
-    } catch(err) {
+    } catch (err) {
       console.error(err); alert('Помилка сервера. Спробуйте ще раз.');
     }
     showLoading(false);
   }
 
-  document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>
