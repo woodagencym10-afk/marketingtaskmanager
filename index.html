@@ -170,7 +170,7 @@
       </div>
     </div>
     <div id="deadline-container" class="p-field">
-      <label class="p-label">Дедлайн</label>
+      <label class="p-label">Дедлайн <span style="color:var(--red)">*</span></label>
       <input class="p-input" type="date" id="new-deadline">
     </div>
     <button class="btn btn-primary btn-full btn-lg" id="submit-btn" onclick="submitTask()" style="margin-top:8px">
@@ -185,7 +185,6 @@
     <div class="p-badge p-badge-accent" id="view-direction" style="margin-bottom:12px"></div>
     <h3 id="view-title" class="p-modal-title" style="font-size:19px;line-height:1.3;margin-bottom:18px"></h3>
     <div class="p-meta-box">
-      <!-- Новий блок: Дата створення -->
       <div class="p-meta-item">
         <span class="p-meta-label">Створено</span>
         <span class="p-meta-value" id="view-created" style="color:var(--text-lo);font-weight:500;font-size:13.5px">—</span>
@@ -614,6 +613,7 @@
   function closeModal(id) { 
     document.getElementById(id).style.display = 'none'; 
     if (id === 'task-modal') openedTaskId = null;
+    if (id === 'create-modal') document.getElementById('new-deadline').style.borderColor = ''; 
   }
 
   async function submitTask() {
@@ -621,22 +621,43 @@
     const direction   = isIdea ? '' : document.getElementById('new-direction').value;
     const responsible = isIdea ? '' : document.getElementById('new-responsible').value;
     const deadline    = isIdea ? '' : document.getElementById('new-deadline').value;
+    
+    // --- НОВА ПЕРЕВІРКА НА ОБОВ'ЯЗКОВИЙ ДЕДЛАЙН ---
+    if (!isIdea && !deadline) {
+      document.getElementById('new-deadline').style.borderColor = 'var(--red)';
+      document.getElementById('new-deadline').focus();
+      return;
+    }
+    document.getElementById('new-deadline').style.borderColor = '';
+    // ----------------------------------------------
+
     const btn         = document.getElementById('submit-btn');
     btn.textContent   = 'Завантаження...'; btn.disabled = true;
 
     if (createMode === 'single') {
       const title = document.getElementById('new-title').value;
-      if(!title) { alert("Введіть назву!"); btn.textContent='Створити картку'; btn.disabled=false; return; }
+      if(!title) { 
+        alert("Введіть назву!"); 
+        btn.textContent = 'Створити картку'; 
+        btn.disabled=false; 
+        return; 
+      }
       await apiRequest({ action:"createTask", isIdea, title, description:document.getElementById('new-description').value, direction, responsible, deadline });
     } else {
       const titles = document.getElementById('new-bulk-titles').value.split('\n').map(t=>t.trim()).filter(Boolean);
-      if(!titles.length) { alert("Введіть хоча б одну задачу!"); btn.textContent='Створити список задач'; btn.disabled=false; return; }
+      if(!titles.length) { 
+        alert("Введіть хоча б одну задачу!"); 
+        btn.textContent = 'Створити список задач'; 
+        btn.disabled=false; 
+        return; 
+      }
       await apiRequest({ action:"bulkCreateTasks", isIdea, titles, direction, responsible, deadline });
     }
 
     closeModal('create-modal');
     ['new-title','new-description','new-bulk-titles','new-deadline'].forEach(id => document.getElementById(id).value='');
-    btn.textContent='Створити картку'; btn.disabled=false;
+    btn.textContent = createMode === 'single' ? 'Створити картку' : 'Створити список задач'; 
+    btn.disabled=false;
     loadTasks();
   }
 
@@ -647,18 +668,15 @@
     document.getElementById('view-title').innerText     = task.Title;
     document.getElementById('view-direction').innerText = task.Direction || '';
 
-    // --- АЛГОРИТМ: ДІСТАЄМО ДАТУ СТВОРЕННЯ ---
     let createdDateStr = '—';
     if (task.CreatedAt) {
       createdDateStr = new Date(task.CreatedAt).toLocaleDateString('uk-UA');
     } else if (task.Timestamp) {
       createdDateStr = new Date(task.Timestamp).toLocaleDateString('uk-UA');
     } else if (task.ID && !isNaN(task.ID) && task.ID.toString().length === 13) {
-      // Якщо ID задачі це таймстемп (часто в Google Apps Script)
       createdDateStr = new Date(Number(task.ID)).toLocaleDateString('uk-UA');
     }
     document.getElementById('view-created').innerText = createdDateStr;
-    // ------------------------------------------
 
     const descView = document.getElementById('desc-view');
     if (task.Description && task.Description.trim()) {
