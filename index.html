@@ -741,16 +741,42 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  // Оновлена функція з Оптимістичним Оновленням (Optimistic UI)
   async function addComment() {
-    const text = document.getElementById('new-comment').value;
+    const text = document.getElementById('new-comment').value.trim();
     if(!text) return;
-    const res = await apiRequest({ action:"addComment", taskId:openedTaskId, text });
-    if(res.success) {
-      document.getElementById('new-comment').value = '';
-      const idx = currentTasks.findIndex(t => t.ID.toString() === openedTaskId.toString());
-      currentTasks[idx].Comments = JSON.stringify(res.comments);
+    
+    // 1. Одразу очищаємо поле вводу, щоб користувач відчував швидкість
+    document.getElementById('new-comment').value = '';
+    
+    // 2. Створюємо "тимчасовий" коментар з вашим іменем і поточним часом
+    const tempComment = {
+      user: localStorage.getItem("userName") || 'Ви',
+      date: new Date().toISOString(),
+      text: text
+    };
+    
+    // 3. Миттєво додаємо його в локальну пам'ять і малюємо на екрані
+    const idx = currentTasks.findIndex(t => t.ID.toString() === openedTaskId.toString());
+    if (idx > -1) {
+      let parsedComments = [];
+      try { parsedComments = JSON.parse(currentTasks[idx].Comments || "[]"); } catch(e) {}
+      parsedComments.push(tempComment);
+      currentTasks[idx].Comments = JSON.stringify(parsedComments);
       renderComments(currentTasks[idx].Comments);
     }
+
+    // 4. Відправляємо запит на сервер У ФОНІ (без блокування інтерфейсу)
+    apiRequest({ action:"addComment", taskId:openedTaskId, text }).then(res => {
+      if(res.success && idx > -1) {
+        currentTasks[idx].Comments = JSON.stringify(res.comments);
+        if(openedTaskId === currentTasks[idx].ID.toString()) {
+           renderComments(currentTasks[idx].Comments);
+        }
+      } else {
+        console.error("Помилка збереження на сервері:", res.error);
+      }
+    }).catch(err => console.error("Помилка мережі:", err));
   }
 
   async function approveTask() {
