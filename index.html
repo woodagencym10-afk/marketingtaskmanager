@@ -185,6 +185,11 @@
     <div class="p-badge p-badge-accent" id="view-direction" style="margin-bottom:12px"></div>
     <h3 id="view-title" class="p-modal-title" style="font-size:19px;line-height:1.3;margin-bottom:18px"></h3>
     <div class="p-meta-box">
+      <!-- Новий блок: Дата створення -->
+      <div class="p-meta-item">
+        <span class="p-meta-label">Створено</span>
+        <span class="p-meta-value" id="view-created" style="color:var(--text-lo);font-weight:500;font-size:13.5px">—</span>
+      </div>
       <div class="p-meta-item">
         <span class="p-meta-label">Відповідальний</span>
         <span class="p-meta-value" id="view-responsible"></span>
@@ -269,7 +274,6 @@
   let openedTaskId = null;
   let createMode   = 'single';
 
-  // Зберігаємо pending-дані при перенесенні в Готово
   let pendingDoneTaskId  = null;
   let pendingDoneElement = null;
   let pendingDoneFromCol = null;
@@ -529,7 +533,6 @@
     pendingDoneFromCol = null;
   }
 
-  // --- НОВА ВЕРСІЯ: МИТТЄВЕ ЗАКРИТТЯ (ОПТИМІСТИЧНЕ ОНОВЛЕННЯ) ---
   async function confirmResult() {
     const resultText = document.getElementById('result-text').value.trim();
     const resultLink = document.getElementById('result-link').value.trim();
@@ -548,13 +551,9 @@
     if (resultLink) commentParts.push(`🔗 ${resultLink}`);
     const resultComment = commentParts.join('\n');
 
-    // === 1. МИТТЄВА РЕАКЦІЯ ІНТЕРФЕЙСУ ===
-    
-    // Одразу закриваємо всі вікна
     document.getElementById('result-modal').style.display = 'none';
     if (openedTaskId) closeModal('task-modal');
 
-    // Оновлюємо дані локально
     const idx = currentTasks.findIndex(t => t.ID.toString() === taskId.toString());
     if (idx > -1) {
       currentTasks[idx].Status = 'Готово'; 
@@ -571,18 +570,13 @@
       currentTasks[idx].Comments = JSON.stringify(parsedComments);
     }
 
-    // Перемальовуємо дошку — картка миттєво з'являється в "Готово"
     renderTasks();
 
-    // Очищаємо тимчасові змінні
     pendingDoneTaskId  = null;
     pendingDoneElement = null;
     pendingDoneFromCol = null;
 
-    // === 2. ВІДПРАВКА НА СЕРВЕР У ФОНІ ===
-    
     try {
-      // Запускаємо збереження коментаря і зміну статусу паралельно, не чекаючи відповіді
       Promise.all([
         apiRequest({ action:"addComment", taskId, text: resultComment }),
         apiRequest({ action:"updateStatus", taskId, status:"Готово", isApprovedAction: isApproved })
@@ -652,6 +646,19 @@
 
     document.getElementById('view-title').innerText     = task.Title;
     document.getElementById('view-direction').innerText = task.Direction || '';
+
+    // --- АЛГОРИТМ: ДІСТАЄМО ДАТУ СТВОРЕННЯ ---
+    let createdDateStr = '—';
+    if (task.CreatedAt) {
+      createdDateStr = new Date(task.CreatedAt).toLocaleDateString('uk-UA');
+    } else if (task.Timestamp) {
+      createdDateStr = new Date(task.Timestamp).toLocaleDateString('uk-UA');
+    } else if (task.ID && !isNaN(task.ID) && task.ID.toString().length === 13) {
+      // Якщо ID задачі це таймстемп (часто в Google Apps Script)
+      createdDateStr = new Date(Number(task.ID)).toLocaleDateString('uk-UA');
+    }
+    document.getElementById('view-created').innerText = createdDateStr;
+    // ------------------------------------------
 
     const descView = document.getElementById('desc-view');
     if (task.Description && task.Description.trim()) {
