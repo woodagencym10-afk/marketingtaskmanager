@@ -529,6 +529,7 @@
     pendingDoneFromCol = null;
   }
 
+  // --- НОВА ВЕРСІЯ: МИТТЄВЕ ЗАКРИТТЯ (ОПТИМІСТИЧНЕ ОНОВЛЕННЯ) ---
   async function confirmResult() {
     const resultText = document.getElementById('result-text').value.trim();
     const resultLink = document.getElementById('result-link').value.trim();
@@ -541,32 +542,57 @@
     document.getElementById('result-text').style.borderColor = '';
 
     const taskId = pendingDoneTaskId || openedTaskId;
+    const isApproved = openedTaskId ? true : false;
+    
     const commentParts = [`✅ Результат: ${resultText}`];
     if (resultLink) commentParts.push(`🔗 ${resultLink}`);
     const resultComment = commentParts.join('\n');
 
-    const commentRes = await apiRequest({ action:"addComment", taskId, text: resultComment });
-    const statusRes = await apiRequest({ action:"updateStatus", taskId, status:"Готово", isApprovedAction: openedTaskId ? true : false });
-
+    // === 1. МИТТЄВА РЕАКЦІЯ ІНТЕРФЕЙСУ ===
+    
+    // Одразу закриваємо всі вікна
     document.getElementById('result-modal').style.display = 'none';
+    if (openedTaskId) closeModal('task-modal');
 
-    if (statusRes.success) {
-      if (openedTaskId) closeModal('task-modal');
-      if (commentRes.success) {
-        const idx = currentTasks.findIndex(t => t.ID.toString() === taskId.toString());
-        if (idx > -1) {
-          currentTasks[idx].Status   = 'Готово';
-          currentTasks[idx].Comments = JSON.stringify(commentRes.comments);
-        }
-      }
-      loadTasks();
-    } else {
-      alert(statusRes.error || 'Помилка збереження');
+    // Оновлюємо дані локально
+    const idx = currentTasks.findIndex(t => t.ID.toString() === taskId.toString());
+    if (idx > -1) {
+      currentTasks[idx].Status = 'Готово'; 
+      
+      const tempComment = {
+        user: localStorage.getItem("userName") || 'Ви',
+        date: new Date().toISOString(),
+        text: resultComment
+      };
+      
+      let parsedComments = [];
+      try { parsedComments = JSON.parse(currentTasks[idx].Comments || "[]"); } catch(e) {}
+      parsedComments.push(tempComment);
+      currentTasks[idx].Comments = JSON.stringify(parsedComments);
     }
 
+    // Перемальовуємо дошку — картка миттєво з'являється в "Готово"
+    renderTasks();
+
+    // Очищаємо тимчасові змінні
     pendingDoneTaskId  = null;
     pendingDoneElement = null;
     pendingDoneFromCol = null;
+
+    // === 2. ВІДПРАВКА НА СЕРВЕР У ФОНІ ===
+    
+    try {
+      // Запускаємо збереження коментаря і зміну статусу паралельно, не чекаючи відповіді
+      Promise.all([
+        apiRequest({ action:"addComment", taskId, text: resultComment }),
+        apiRequest({ action:"updateStatus", taskId, status:"Готово", isApprovedAction: isApproved })
+      ]).then(([commentRes, statusRes]) => {
+        if (!statusRes.success) console.error('Помилка оновлення статусу:', statusRes.error);
+        if (!commentRes.success) console.error('Помилка збереження коментаря:', commentRes.error);
+      });
+    } catch(e) {
+      console.error("Фонова помилка мережі:", e);
+    }
   }
 
   function toggleIdeaMode() {
@@ -741,22 +767,18 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  // Оновлена функція з Оптимістичним Оновленням (Optimistic UI)
   async function addComment() {
     const text = document.getElementById('new-comment').value.trim();
     if(!text) return;
     
-    // 1. Одразу очищаємо поле вводу, щоб користувач відчував швидкість
     document.getElementById('new-comment').value = '';
     
-    // 2. Створюємо "тимчасовий" коментар з вашим іменем і поточним часом
     const tempComment = {
       user: localStorage.getItem("userName") || 'Ви',
       date: new Date().toISOString(),
       text: text
     };
     
-    // 3. Миттєво додаємо його в локальну пам'ять і малюємо на екрані
     const idx = currentTasks.findIndex(t => t.ID.toString() === openedTaskId.toString());
     if (idx > -1) {
       let parsedComments = [];
@@ -766,7 +788,6 @@
       renderComments(currentTasks[idx].Comments);
     }
 
-    // 4. Відправляємо запит на сервер У ФОНІ (без блокування інтерфейсу)
     apiRequest({ action:"addComment", taskId:openedTaskId, text }).then(res => {
       if(res.success && idx > -1) {
         currentTasks[idx].Comments = JSON.stringify(res.comments);
