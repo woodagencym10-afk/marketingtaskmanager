@@ -49,7 +49,7 @@
     </nav>
     <div class="p-header-right">
       <div class="p-user-badge">
-        <div class="p-user-avatar" id="user-avatar-initial">?</div>
+        <div class="p-user-avatar" id="user-avatar-initial" style="color:#fff;">?</div>
         <span id="user-info">—</span>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="openCreateModal()">＋ Створити</button>
@@ -277,6 +277,19 @@
   let pendingDoneElement = null;
   let pendingDoneFromCol = null;
 
+  // --- НОВА ФУНКЦІЯ: ГЕНЕРАЦІЯ КОЛЬОРУ З ІМЕНІ ---
+  function getAvatarColor(name) {
+    if (!name) return '#6366f1';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Генеруємо HSL колір (насиченість 65%, яскравість 45% для контрасту з білим текстом)
+    const hue = Math.abs(hash % 360);
+    return `hsl(${hue}, 65%, 45%)`;
+  }
+  // ------------------------------------------------
+
   window.onload = () => {
     if (localStorage.getItem("userToken")) showBoard();
   };
@@ -319,8 +332,14 @@
     const name = localStorage.getItem("userName") || '';
     const role = localStorage.getItem("userRole") || '';
     document.getElementById("user-info").innerText = `${name} · ${role}`;
+    
+    // Застосовуємо колір для головної аватарки в шапці
     const av = document.getElementById("user-avatar-initial");
-    if(av) av.innerText = name ? name[0].toUpperCase() : '?';
+    if(av) {
+      av.innerText = name ? name[0].toUpperCase() : '?';
+      av.style.backgroundColor = getAvatarColor(name);
+    }
+
     document.getElementById("stats-container").style.display = "grid";
     if (role === "manager" || role === "owner")
       document.getElementById("filters-container").style.display = "flex";
@@ -459,14 +478,16 @@
         }
       }
 
+      // Застосовуємо унікальний колір до аватарки на самій картці
       const initials = task.Responsible ? task.Responsible[0].toUpperCase() : '?';
+      const avatarColor = getAvatarColor(task.Responsible);
 
       card.innerHTML = `
         ${!isIdea ? `<div class="p-card-dir">${task.Direction||'—'}</div>` : ''}
         <div class="p-card-title">${task.Title}</div>
         <div class="p-card-footer">
           ${!isIdea
-            ? `<div class="p-card-resp"><div class="p-avatar">${initials}</div>${task.Responsible||'—'}</div>`
+            ? `<div class="p-card-resp"><div class="p-avatar" style="background-color:${avatarColor};color:#fff;">${initials}</div>${task.Responsible||'—'}</div>`
             : `<div></div>`}
           ${dateHtml}
         </div>
@@ -622,14 +643,12 @@
     const responsible = isIdea ? '' : document.getElementById('new-responsible').value;
     const deadline    = isIdea ? '' : document.getElementById('new-deadline').value;
     
-    // --- НОВА ПЕРЕВІРКА НА ОБОВ'ЯЗКОВИЙ ДЕДЛАЙН ---
     if (!isIdea && !deadline) {
       document.getElementById('new-deadline').style.borderColor = 'var(--red)';
       document.getElementById('new-deadline').focus();
       return;
     }
     document.getElementById('new-deadline').style.borderColor = '';
-    // ----------------------------------------------
 
     const btn         = document.getElementById('submit-btn');
     btn.textContent   = 'Завантаження...'; btn.disabled = true;
@@ -691,9 +710,11 @@
     document.getElementById('desc-edit-btn').style.display  = 'inline-flex';
     document.getElementById('desc-save-msg').style.display  = 'none';
 
+    // Застосовуємо унікальний колір в самій модалці задачі
     const initials = task.Responsible ? task.Responsible[0].toUpperCase() : '?';
+    const avatarColor = getAvatarColor(task.Responsible);
     document.getElementById('view-responsible').innerHTML =
-      `<div class="p-avatar p-avatar-lg" style="display:inline-flex">${initials}</div> ${task.Responsible||'—'}`;
+      `<div class="p-avatar p-avatar-lg" style="display:inline-flex;background-color:${avatarColor};color:#fff;">${initials}</div> ${task.Responsible||'—'}`;
 
     const dlInput = document.getElementById('view-deadline-input');
     dlInput.value = task.Deadline ? new Date(task.Deadline).toISOString().split('T')[0] : '';
@@ -775,6 +796,9 @@
       const isResult = c.text && c.text.startsWith('✅ Результат:');
       const commentClass = isResult ? 'p-comment p-comment-result' : 'p-comment';
 
+      // Застосовуємо унікальний колір в коментарях
+      const avatarColor = getAvatarColor(c.user);
+
       const rawText   = c.text || '';
       const escaped   = rawText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const withLinks = linkify(escaped);
@@ -783,7 +807,7 @@
       container.innerHTML += `
         <div class="${commentClass}">
           <div class="p-comment-header">
-            <span class="p-comment-author"><div class="p-avatar">${init}</div>${c.user}</span>
+            <span class="p-comment-author"><div class="p-avatar" style="background-color:${avatarColor};color:#fff;">${init}</div>${c.user}</span>
             <span class="p-comment-date">${dateStr}</span>
           </div>
           <div class="p-comment-text">${withBreaks}</div>
