@@ -10,28 +10,37 @@
   <link rel="stylesheet" href="portal.css">
   
   <style>
-    /* Перевизначення акцентного кольору на глибокий синій для більш професійного вигляду */
+    /* Жорстке перевизначення темної теми на чистий світлий стиль */
     :root {
-      --accent: #010A5E;
-      --accent-dim: #e6e7ef;
+      --accent: #010A5E !important; 
+      --accent-dim: #E6E7EF !important;
+      --bg-milk: #F8F9FA !important;
+      --card-bg: #FFFFFF !important;
+      --text-main: #111827 !important;
+      --text-lo: #6B7280 !important;
+      --border-color: #E5E7EB !important;
     }
 
-    /* Стилі для нового layout'у з лівою панеллю */
-    #board-screen {
-      height: 100vh;
-      overflow: hidden;
-      background: #f4f5f7; /* Трохи темніший фон для контрасту з білими картками та панеллю */
+    body, #board-screen, .p-main-wrapper, .p-page {
+      background-color: var(--bg-milk) !important;
+      color: var(--text-main) !important;
     }
-    
+
     .p-sidebar {
+      background: var(--card-bg) !important;
+      border-right: 1px solid var(--border-color) !important;
       width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e5e7eb;
       display: flex;
       flex-direction: column;
       padding: 24px 20px;
       flex-shrink: 0;
       z-index: 10;
+    }
+
+    #board-screen {
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
     }
 
     .p-main-wrapper {
@@ -49,58 +58,50 @@
       padding: 24px 32px;
     }
 
+    /* Картки, статистика та фільтри */
+    .p-card, .p-stat, .p-filters, .p-login-card, .p-modal {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      color: var(--text-main) !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+
+    .p-card-title, .p-column-header, .p-column-title, .p-col-count, .p-stat-label, .p-stat-value {
+      color: var(--text-main) !important;
+    }
+
+    /* Поля вводу */
+    .p-input, .p-select, .p-textarea {
+      background: #FFFFFF !important;
+      color: var(--text-main) !important;
+      border: 1px solid #D1D5DB !important;
+    }
+    .p-input::placeholder, .p-textarea::placeholder {
+      color: #9CA3AF !important;
+    }
+    .p-input:focus, .p-select:focus, .p-textarea:focus {
+      border-color: var(--accent) !important;
+      outline: none;
+    }
+
     /* Вертикальне меню навігації */
-    .p-nav-vertical {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 32px;
-    }
-    
+    .p-nav-vertical { display: flex; flex-direction: column; gap: 6px; margin-top: 32px; }
     .p-nav-btn-v {
-      padding: 12px 16px;
-      border-radius: 10px;
-      color: #4b5563;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 500;
-      font-size: 15px;
-      transition: all 0.2s ease;
+      padding: 12px 16px; border-radius: 10px; color: var(--text-main) !important;
+      text-decoration: none; display: flex; align-items: center; gap: 12px;
+      font-weight: 500; font-size: 15px; transition: all 0.2s ease;
     }
-    
-    .p-nav-btn-v:hover {
-      background: #f3f4f6;
-      color: #111;
-    }
-    
+    .p-nav-btn-v:hover { background: #f3f4f6 !important; }
     .p-nav-btn-v.active {
-      background: var(--accent);
-      color: #ffffff;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(1, 10, 94, 0.15);
+      background: var(--accent) !important; color: #FFFFFF !important; font-weight: 600;
     }
 
-    .p-nav-btn-v .nav-icon {
-      font-size: 18px;
-    }
+    .p-header { display: none !important; } /* Ховаємо стару шапку */
 
-    /* Кастомний скролбар для основного контенту */
-    .p-main-content::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    .p-main-content::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .p-main-content::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-
-    /* Приховуємо стару горизонтальну шапку, якщо вона залишилась в portal.css */
-    .p-header { display: none !important; }
+    /* Кастомний скролбар */
+    .p-main-content::-webkit-scrollbar { width: 8px; height: 8px; }
+    .p-main-content::-webkit-scrollbar-track { background: transparent; }
+    .p-main-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -108,9 +109,9 @@
 <div id="login-screen" class="p-login-wrap">
   <div class="p-login-card">
     <div class="p-login-logo">
-      <div class="p-logo-mark">MKT</div>
+      <div class="p-logo-mark" style="background:var(--accent)">MKT</div>
       <div>
-        <div class="p-login-title">Marketing <span style="color:var(--accent)">Portal</span></div>
+        <div class="p-login-title" style="color:var(--text-main)">Marketing <span style="color:var(--accent)">Portal</span></div>
         <div class="p-login-sub">Увійдіть у свій робочий простір</div>
       </div>
     </div>
@@ -131,14 +132,13 @@
 </div>
 
 <div id="board-screen" style="display:none;">
-  
   <aside class="p-sidebar">
     <a class="p-logo" href="#" style="display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 32px;">
-      <div class="p-logo-mark" style="background: var(--accent);">MKT</div>
-      <div class="p-logo-text" style="font-family: Syne, sans-serif; font-weight: 700; color: #111; font-size: 18px;">Marketing<br><span style="color:var(--accent); font-size: 14px;">Portal</span></div>
+      <div class="p-logo-mark" style="background: var(--accent); color: #fff;">MKT</div>
+      <div class="p-logo-text" style="font-family: Syne, sans-serif; font-weight: 700; color: var(--text-main); font-size: 18px;">Marketing<br><span style="color:var(--accent); font-size: 14px;">Portal</span></div>
     </a>
 
-    <button class="btn btn-primary btn-full" onclick="openCreateModal()" style="padding: 12px; font-size: 15px; background-color: var(--accent); border-color: var(--accent);">
+    <button class="btn btn-primary btn-full" onclick="openCreateModal()" style="padding: 12px; font-size: 15px; background-color: var(--accent); border-color: var(--accent); color:#fff;">
       ＋ Створити задачу
     </button>
 
@@ -147,12 +147,12 @@
       <a href="knowledge.html" class="p-nav-btn-v"><span class="nav-icon">📚</span> База знань</a>
     </nav>
 
-    <div style="margin-top: auto; border-top: 1px solid #eee; padding-top: 20px;">
+    <div style="margin-top: auto; border-top: 1px solid var(--border-color); padding-top: 20px;">
       <div class="p-user-badge" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
         <div class="p-user-avatar" id="user-avatar-initial" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: #fff;">?</div>
         <div style="display: flex; flex-direction: column;">
-          <span id="user-info-name" style="font-size: 14px; font-weight: 600; color: #111;">—</span>
-          <span id="user-info-role" style="font-size: 12px; color: #6b7280; text-transform: capitalize;">—</span>
+          <span id="user-info-name" style="font-size: 14px; font-weight: 600; color: var(--text-main);">—</span>
+          <span id="user-info-role" style="font-size: 12px; color: var(--text-lo); text-transform: capitalize;">—</span>
         </div>
       </div>
       <button class="btn btn-ghost btn-sm btn-full" onclick="logout()" style="color: #dc2626; background: #fef2f2;">Вийти з акаунту</button>
@@ -171,57 +171,39 @@
         <div class="p-stat is-green"><div class="p-stat-label">✅ Готово</div><div class="p-stat-value" id="stat-done">0</div></div>
       </div>
 
-      <div id="filters-container" class="p-filters" style="display:none; margin-bottom: 24px; background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <div id="filters-container" class="p-filters" style="display:none; margin-bottom: 24px; padding: 16px; border-radius: 12px;">
         <label style="font-weight: 500; font-size: 14px;">Період:</label>
         <input type="date" class="p-input" id="date-start" onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
         <span style="color:var(--text-lo);font-size:13px;">—</span>
         <input type="date" class="p-input" id="date-end"   onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
-        <div class="p-filter-sep" style="width: 1px; height: 24px; background: #e5e7eb; margin: 0 12px;"></div>
+        <div class="p-filter-sep" style="width: 1px; height: 24px; background: var(--border-color); margin: 0 12px;"></div>
         <select class="p-select" id="filter-responsible" onchange="applyFilters()"><option value="">Всі виконавці</option></select>
         <select class="p-select" id="filter-direction"   onchange="applyFilters()"><option value="">Всі напрямки</option></select>
       </div>
 
       <div class="p-board" style="padding: 0;">
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">💡 Ідеї</span>
-            <span class="p-col-count" id="count-Ідеї">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">💡 Ідеї</span><span class="p-col-count" id="count-Ідеї">0</span></div>
           <div class="p-task-list" id="col-Ідеї" data-status="Ідеї"></div>
         </div>
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">📝 Треба зробити</span>
-            <span class="p-col-count" id="count-Треба-зробити">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">📝 Треба зробити</span><span class="p-col-count" id="count-Треба-зробити">0</span></div>
           <div class="p-task-list" id="col-Треба зробити" data-status="Треба зробити"></div>
         </div>
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">⚙️ В роботі</span>
-            <span class="p-col-count" id="count-В-роботі">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">⚙️ В роботі</span><span class="p-col-count" id="count-В-роботі">0</span></div>
           <div class="p-task-list" id="col-В роботі" data-status="В роботі"></div>
         </div>
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">👀 На погодження</span>
-            <span class="p-col-count" id="count-На-погодження">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">👀 На погодження</span><span class="p-col-count" id="count-На-погодження">0</span></div>
           <div class="p-task-list" id="col-На погодження" data-status="На погодження"></div>
         </div>
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">⚠️ Потребує правок</span>
-            <span class="p-col-count" id="count-Потребує-правок">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">⚠️ Потребує правок</span><span class="p-col-count" id="count-Потребує-правок">0</span></div>
           <div class="p-task-list" id="col-Потребує правок" data-status="Потребує правок"></div>
         </div>
         <div class="p-column">
-          <div class="p-column-header">
-            <span class="p-column-title">✅ Готово</span>
-            <span class="p-col-count" id="count-Готово">0</span>
-          </div>
+          <div class="p-column-header"><span class="p-column-title">✅ Готово</span><span class="p-col-count" id="count-Готово">0</span></div>
           <div class="p-task-list" id="col-Готово" data-status="Готово"></div>
         </div>
       </div>
@@ -230,20 +212,23 @@
 </div>
 
 <div id="create-modal" class="p-modal-overlay">
-  <div class="p-modal" style="width:580px">
+  <div class="p-modal" style="width:620px">
     <button class="p-modal-close" onclick="closeModal('create-modal')">✕</button>
     <h3 class="p-modal-title">Нова задача</h3>
     <div class="p-tabs">
       <button class="p-tab active" id="tab-single" onclick="setCreateMode('single')">Одиночна задача</button>
       <button class="p-tab" id="tab-bulk"   onclick="setCreateMode('bulk')">📅 План на день</button>
     </div>
-    <div class="p-field">
+    
+    <div class="p-field" id="type-container">
       <label class="p-label">Тип</label>
       <select class="p-select" id="new-type" onchange="toggleIdeaMode()">
         <option value="task">📝 Задача (обов'язково виконати)</option>
         <option value="idea">💡 Ідея (на потім)</option>
       </select>
     </div>
+
+    <!-- Режим: Одиночна задача -->
     <div id="mode-single-fields">
       <div class="p-field">
         <label class="p-label">Коротка назва</label>
@@ -253,14 +238,28 @@
         <label class="p-label">Детальний опис</label>
         <textarea class="p-textarea" id="new-description" rows="3" placeholder="ТЗ, посилання, деталі..."></textarea>
       </div>
-    </div>
-    <div id="mode-bulk-fields" style="display:none">
-      <div class="p-field">
-        <label class="p-label">Список задач</label>
-        <textarea class="p-textarea" id="new-bulk-titles" rows="6" placeholder="Задача 1&#10;Задача 2&#10;Задача 3..."></textarea>
-        <div style="font-size:11.5px;color:var(--text-lo);margin-top:5px;">Кожна задача з нового рядка. Опис можна додати потім у картці.</div>
+      <div id="deadline-container" class="p-field">
+        <label class="p-label">Дедлайн (дата та час) <span style="color:var(--red)">*</span></label>
+        <input class="p-input" type="datetime-local" id="new-deadline">
       </div>
     </div>
+
+    <!-- Режим: План на день -->
+    <div id="mode-bulk-fields" style="display:none">
+      <div class="p-field">
+        <label class="p-label">Оберіть дату для плану <span style="color:var(--red)">*</span></label>
+        <input class="p-input" type="date" id="bulk-date">
+      </div>
+      <div class="p-field">
+        <label class="p-label">Задачі та час виконання</label>
+        <div id="bulk-tasks-container" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Динамічні поля додаватимуться сюди -->
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addBulkRow()" style="margin-top:12px; color:var(--accent);">＋ Додати ще задачу</button>
+      </div>
+    </div>
+
+    <!-- Спільні поля (Відповідальний / Напрямок) -->
     <div id="direction-responsible-fields">
       <div style="display:flex;gap:14px">
         <div class="p-field" style="flex:1">
@@ -273,11 +272,8 @@
         </div>
       </div>
     </div>
-    <div id="deadline-container" class="p-field">
-      <label class="p-label">Дедлайн (дата та час) <span style="color:var(--red)">*</span></label>
-      <input class="p-input" type="datetime-local" id="new-deadline">
-    </div>
-    <button class="btn btn-primary btn-full btn-lg" id="submit-btn" onclick="submitTask()" style="margin-top:8px; background-color: var(--accent); border-color: var(--accent);">
+    
+    <button class="btn btn-primary btn-full btn-lg" id="submit-btn" onclick="submitTask()" style="margin-top:12px; background-color: var(--accent); border-color: var(--accent); color:#fff;">
       Створити картку
     </button>
   </div>
@@ -345,28 +341,18 @@
     </p>
 
     <div class="p-field">
-      <label class="p-label">
-        📊 Який результат? <span style="color:var(--red)">*</span>
-      </label>
-      <textarea class="p-textarea" id="result-text" rows="3"
-        placeholder="Наприклад: опубліковано 3 пости, охоплення 1200 осіб / зібрано 47 лідів / написано 5 текстів для сторіс..."></textarea>
-      <div style="font-size:11.5px;color:var(--text-lo);margin-top:5px;">Пиши конкретно і в цифрах — так легше аналізувати 📈</div>
+      <label class="p-label">📊 Який результат? <span style="color:var(--red)">*</span></label>
+      <textarea class="p-textarea" id="result-text" rows="3" placeholder="Наприклад: опубліковано 3 пости..."></textarea>
     </div>
 
     <div class="p-field">
       <label class="p-label">🔗 Посилання на результат <span style="font-weight:400;color:var(--text-lo)">(необов'язково)</span></label>
-      <input class="p-input" type="url" id="result-link"
-             placeholder="https://instagram.com/p/... або посилання на Google Drive">
-      <div style="font-size:11.5px;color:var(--text-lo);margin-top:5px;">Пост, файл, таблиця, сторінка — будь-що що можна відкрити</div>
+      <input class="p-input" type="url" id="result-link" placeholder="https://...">
     </div>
 
     <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-success btn-full btn-lg" onclick="confirmResult()">
-        ✅ Зберегти і закрити
-      </button>
-      <button class="btn btn-ghost btn-lg" style="white-space:nowrap" onclick="cancelResult()">
-        Скасувати
-      </button>
+      <button class="btn btn-success btn-full btn-lg" onclick="confirmResult()">✅ Зберегти і закрити</button>
+      <button class="btn btn-ghost btn-lg" style="white-space:nowrap" onclick="cancelResult()">Скасувати</button>
     </div>
   </div>
 </div>
@@ -382,18 +368,14 @@
   let pendingDoneFromCol = null;
 
   function getAvatarColor(name) {
-    if (!name) return '#6366f1';
+    if (!name) return '#010A5E';
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
+    for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
     const hue = Math.abs(hash % 360);
     return `hsl(${hue}, 65%, 45%)`;
   }
 
-  window.onload = () => {
-    if (localStorage.getItem("userToken")) showBoard();
-  };
+  window.onload = () => { if (localStorage.getItem("userToken")) showBoard(); };
 
   async function appLogin() {
     const user = document.getElementById("login-username").value;
@@ -429,22 +411,18 @@
 
   function showBoard() {
     document.getElementById("login-screen").style.display  = "none";
-    // Встановлюємо display: flex для нового макету з сайдбаром
     document.getElementById("board-screen").style.display  = "flex"; 
     
     const name = localStorage.getItem("userName") || '';
     const role = localStorage.getItem("userRole") || '';
     
-    // Оновлюємо дані користувача в сайдбарі
     const av = document.getElementById("user-avatar-initial");
     if(av) {
       av.innerText = name ? name[0].toUpperCase() : '?';
       av.style.backgroundColor = getAvatarColor(name);
     }
-    
     const nameEl = document.getElementById("user-info-name");
     if(nameEl) nameEl.innerText = name || "Користувач";
-    
     const roleEl = document.getElementById("user-info-role");
     if(roleEl) roleEl.innerText = role;
 
@@ -501,7 +479,6 @@
 
   function renderTasks() {
     document.querySelectorAll('.p-task-list').forEach(c => c.innerHTML = '');
-
     const selResp = document.getElementById('filter-responsible').value;
     const selDir  = document.getElementById('filter-direction').value;
     const today   = new Date(); today.setHours(0,0,0,0);
@@ -537,23 +514,22 @@
         isRevisionOverdue = !(updToday && updHour >= 16 && updHour < 18);
       }
 
-      const isOverdue = (task.Status==='Треба зробити' || task.Status==='В роботі')
-        ? isDeadlineOverdue : isRevisionOverdue;
+      const isOverdue = (task.Status==='Треба зробити' || task.Status==='В роботі') ? isDeadlineOverdue : isRevisionOverdue;
 
-      if (isIdea)         statsCount.ideas++;
-      else if (isDone)    statsCount.done++;
+      if (isIdea) statsCount.ideas++;
+      else if (isDone) statsCount.done++;
       else if (isPending) statsCount.pending++;
       else if (isOverdue) statsCount.overdue++;
-      else if (task.Status==='Треба зробити')   statsCount.todo++;
-      else if (task.Status==='В роботі')         statsCount.inprogress++;
-      else if (task.Status==='Потребує правок')  statsCount.revision++;
+      else if (task.Status==='Треба зробити') statsCount.todo++;
+      else if (task.Status==='В роботі') statsCount.inprogress++;
+      else if (task.Status==='Потребує правок') statsCount.revision++;
 
       const card = document.createElement('div');
       card.className = 'p-card';
-      if (isPending)  card.classList.add('is-pending');
+      if (isPending) card.classList.add('is-pending');
       else if (isOverdue) card.classList.add('is-overdue');
       card.dataset.id = task.ID;
-      card.onclick    = () => openTaskModal(task.ID);
+      card.onclick = () => openTaskModal(task.ID);
 
       let dateHtml = '';
       if (isIdea) {
@@ -563,7 +539,7 @@
         dateHtml = `<span style="color:var(--green);font-weight:700;font-size:11.5px">✅ ${closed}</span>`;
       } else if (isPending) {
         if (task.Deadline) {
-          const dlD   = new Date(task.Deadline); 
+          const dlD = new Date(task.Deadline); 
           const dateStr = dlD.toLocaleString('uk-UA',{day:'numeric',month:'short', hour:'2-digit', minute:'2-digit'});
           const passed  = dlD < now;
           const updD    = task.UpdatedAt ? new Date(task.UpdatedAt) : null;
@@ -576,7 +552,7 @@
         }
       } else {
         if (task.Deadline) {
-          const dlD   = new Date(task.Deadline);
+          const dlD = new Date(task.Deadline);
           const dateStr = dlD.toLocaleString('uk-UA',{day:'numeric',month:'short', hour:'2-digit', minute:'2-digit'});
           dateHtml = isOverdue
             ? `<span style="color:var(--red);font-weight:700;font-size:11.5px;background:var(--red-dim);padding:2px 8px;border-radius:99px;border:1px solid var(--red-border)">${dateStr} ⚠</span>`
@@ -599,7 +575,6 @@
           ${dateHtml}
         </div>
       `;
-
       if (column) column.appendChild(card);
     });
 
@@ -607,13 +582,13 @@
       const el = document.getElementById(`count-${s.replace(/ /g,'-')}`);
       if(el) el.innerText = colCounts[s];
     }
-    document.getElementById('stat-ideas').innerText      = statsCount.ideas;
-    document.getElementById('stat-todo').innerText       = statsCount.todo;
+    document.getElementById('stat-ideas').innerText = statsCount.ideas;
+    document.getElementById('stat-todo').innerText = statsCount.todo;
     document.getElementById('stat-inprogress').innerText = statsCount.inprogress;
-    document.getElementById('stat-pending').innerText    = statsCount.pending;
-    document.getElementById('stat-revision').innerText   = statsCount.revision;
-    document.getElementById('stat-overdue').innerText    = statsCount.overdue;
-    document.getElementById('stat-done').innerText       = statsCount.done;
+    document.getElementById('stat-pending').innerText = statsCount.pending;
+    document.getElementById('stat-revision').innerText = statsCount.revision;
+    document.getElementById('stat-overdue').innerText = statsCount.overdue;
+    document.getElementById('stat-done').innerText = statsCount.done;
   }
 
   function initSortable() {
@@ -621,20 +596,19 @@
       new Sortable(col, {
         group:'kanban', animation:200, ghostClass:'sortable-ghost',
         onEnd: async function(evt) {
-          const taskId    = evt.item.dataset.id;
+          const taskId = evt.item.dataset.id;
           const newStatus = evt.to.dataset.status;
           const fromStatus = evt.from.dataset.status;
 
           if (newStatus !== fromStatus) {
             if (newStatus === 'Готово') {
-              pendingDoneTaskId  = taskId;
+              pendingDoneTaskId = taskId;
               pendingDoneElement = evt.item;
               pendingDoneFromCol = evt.from;
               openResultModal();
               evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex] || null);
               return;
             }
-
             const idx = currentTasks.findIndex(t => t.ID.toString() === taskId.toString());
             if(idx > -1) currentTasks[idx].Status = newStatus;
             const res = await apiRequest({ action:"updateStatus", taskId, status:newStatus, isApprovedAction:false });
@@ -655,9 +629,7 @@
 
   function cancelResult() {
     document.getElementById('result-modal').style.display = 'none';
-    pendingDoneTaskId  = null;
-    pendingDoneElement = null;
-    pendingDoneFromCol = null;
+    pendingDoneTaskId = pendingDoneElement = pendingDoneFromCol = null;
   }
 
   async function confirmResult() {
@@ -684,42 +656,46 @@
     const idx = currentTasks.findIndex(t => t.ID.toString() === taskId.toString());
     if (idx > -1) {
       currentTasks[idx].Status = 'Готово'; 
-      
-      const tempComment = {
-        user: localStorage.getItem("userName") || 'Ви',
-        date: new Date().toISOString(),
-        text: resultComment
-      };
-      
+      const tempComment = { user: localStorage.getItem("userName") || 'Ви', date: new Date().toISOString(), text: resultComment };
       let parsedComments = [];
       try { parsedComments = JSON.parse(currentTasks[idx].Comments || "[]"); } catch(e) {}
       parsedComments.push(tempComment);
       currentTasks[idx].Comments = JSON.stringify(parsedComments);
     }
-
     renderTasks();
-
-    pendingDoneTaskId  = null;
-    pendingDoneElement = null;
-    pendingDoneFromCol = null;
+    pendingDoneTaskId = null;
 
     try {
       Promise.all([
         apiRequest({ action:"addComment", taskId, text: resultComment }),
         apiRequest({ action:"updateStatus", taskId, status:"Готово", isApprovedAction: isApproved })
-      ]).then(([commentRes, statusRes]) => {
-        if (!statusRes.success) console.error('Помилка оновлення статусу:', statusRes.error);
-        if (!commentRes.success) console.error('Помилка збереження коментаря:', commentRes.error);
-      });
-    } catch(e) {
-      console.error("Фонова помилка мережі:", e);
-    }
+      ]);
+    } catch(e) { console.error(e); }
+  }
+
+  // --- ЛОГІКА ДИНАМІЧНИХ РЯДКІВ ДЛЯ ПЛАНУ НА ДЕНЬ ---
+  function addBulkRow() {
+    const container = document.getElementById('bulk-tasks-container');
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '8px';
+    row.innerHTML = `
+      <input type="text" class="p-input bulk-title" placeholder="Назва задачі (напр: Опублікувати reels)" style="flex:1;">
+      <input type="time" class="p-input bulk-time" style="width:120px;" title="Час дедлайну">
+      <button class="btn btn-ghost" onclick="this.parentElement.remove()" style="padding:0 12px; color:var(--red); font-weight:600;">✕</button>
+    `;
+    container.appendChild(row);
   }
 
   function toggleIdeaMode() {
     const idea = document.getElementById('new-type').value === 'idea';
     document.getElementById('direction-responsible-fields').style.display = idea ? 'none' : 'block';
-    document.getElementById('deadline-container').style.display             = idea ? 'none' : 'block';
+    
+    if (createMode === 'single') {
+        document.getElementById('deadline-container').style.display = idea ? 'none' : 'block';
+    } else {
+        document.getElementById('mode-bulk-fields').style.display = idea ? 'none' : 'block';
+    }
   }
 
   function setCreateMode(mode) {
@@ -727,8 +703,27 @@
     document.getElementById('tab-single').className = mode==='single' ? 'p-tab active' : 'p-tab';
     document.getElementById('tab-bulk').className   = mode==='bulk'   ? 'p-tab active' : 'p-tab';
     document.getElementById('mode-single-fields').style.display = mode==='single' ? 'block' : 'none';
-    document.getElementById('mode-bulk-fields').style.display   = mode==='bulk'   ? 'block' : 'none';
-    document.getElementById('submit-btn').textContent = mode==='single' ? 'Створити картку' : 'Створити список задач';
+    
+    const isIdea = document.getElementById('new-type').value === 'idea';
+    document.getElementById('mode-bulk-fields').style.display = (mode==='bulk' && !isIdea) ? 'block' : 'none';
+    
+    document.getElementById('submit-btn').textContent = mode==='single' ? 'Створити картку' : 'Створити план на день';
+
+    if (mode === 'bulk') {
+      document.getElementById('type-container').style.display = 'none'; // План на день це завжди задачі
+      document.getElementById('new-type').value = 'task';
+      toggleIdeaMode();
+
+      const container = document.getElementById('bulk-tasks-container');
+      if(container.children.length === 0) {
+        addBulkRow(); addBulkRow(); addBulkRow(); // Створюємо 3 пустих рядка за замовчуванням
+      }
+      if(!document.getElementById('bulk-date').value) {
+        document.getElementById('bulk-date').value = new Date().toISOString().split('T')[0];
+      }
+    } else {
+      document.getElementById('type-container').style.display = 'block';
+    }
   }
 
   function openCreateModal() {
@@ -748,41 +743,55 @@
     const isIdea      = document.getElementById('new-type').value === 'idea';
     const direction   = isIdea ? '' : document.getElementById('new-direction').value;
     const responsible = isIdea ? '' : document.getElementById('new-responsible').value;
-    const deadline    = isIdea ? '' : document.getElementById('new-deadline').value;
     
-    if (!isIdea && !deadline) {
-      document.getElementById('new-deadline').style.borderColor = 'var(--red)';
-      document.getElementById('new-deadline').focus();
-      return;
-    }
-    document.getElementById('new-deadline').style.borderColor = '';
-
-    const btn         = document.getElementById('submit-btn');
-    btn.textContent   = 'Завантаження...'; btn.disabled = true;
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = 'Завантаження...'; btn.disabled = true;
 
     if (createMode === 'single') {
-      const title = document.getElementById('new-title').value;
-      if(!title) { 
-        alert("Введіть назву!"); 
-        btn.textContent = 'Створити картку'; 
-        btn.disabled=false; 
-        return; 
+      const deadline = isIdea ? '' : document.getElementById('new-deadline').value;
+      if (!isIdea && !deadline) {
+        document.getElementById('new-deadline').style.borderColor = 'var(--red)';
+        btn.textContent = 'Створити картку'; btn.disabled = false; return;
       }
+      const title = document.getElementById('new-title').value;
+      if(!title) { alert("Введіть назву!"); btn.textContent = 'Створити картку'; btn.disabled=false; return; }
+      
       await apiRequest({ action:"createTask", isIdea, title, description:document.getElementById('new-description').value, direction, responsible, deadline });
     } else {
-      const titles = document.getElementById('new-bulk-titles').value.split('\n').map(t=>t.trim()).filter(Boolean);
-      if(!titles.length) { 
-        alert("Введіть хоча б одну задачу!"); 
-        btn.textContent = 'Створити список задач'; 
-        btn.disabled=false; 
-        return; 
+      const bulkDateStr = document.getElementById('bulk-date').value;
+      const rows = document.querySelectorAll('#bulk-tasks-container > div');
+      const tasksToCreate = [];
+
+      rows.forEach(row => {
+        const title = row.querySelector('.bulk-title').value.trim();
+        const time = row.querySelector('.bulk-time').value; 
+        if (title) {
+          let taskDeadline = '';
+          if (bulkDateStr && time) { taskDeadline = `${bulkDateStr}T${time}`; } 
+          else if (bulkDateStr) { taskDeadline = `${bulkDateStr}T23:59`; }
+          tasksToCreate.push({ title, deadline: taskDeadline });
+        }
+      });
+
+      if(!tasksToCreate.length) { 
+        alert("Введіть хоча б одну задачу в план!"); 
+        btn.textContent = 'Створити план на день'; btn.disabled=false; return; 
       }
-      await apiRequest({ action:"bulkCreateTasks", isIdea, titles, direction, responsible, deadline });
+
+      // Відправляємо задачі з індивідуальними дедлайнами
+      const promises = tasksToCreate.map(t => 
+        apiRequest({ action:"createTask", isIdea:false, title:t.title, description:"", direction, responsible, deadline:t.deadline })
+      );
+      await Promise.all(promises);
     }
 
     closeModal('create-modal');
-    ['new-title','new-description','new-bulk-titles','new-deadline'].forEach(id => document.getElementById(id).value='');
-    btn.textContent = createMode === 'single' ? 'Створити картку' : 'Створити список задач'; 
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-description').value = '';
+    document.getElementById('new-deadline').value = '';
+    document.getElementById('bulk-tasks-container').innerHTML = ''; // Очищаємо список після створення
+    
+    btn.textContent = createMode === 'single' ? 'Створити картку' : 'Створити план на день'; 
     btn.disabled=false;
     loadTasks();
   }
@@ -795,69 +804,57 @@
     document.getElementById('view-direction').innerText = task.Direction || '';
 
     let createdDateStr = '—';
-    if (task.CreatedAt) {
-      createdDateStr = new Date(task.CreatedAt).toLocaleDateString('uk-UA');
-    } else if (task.Timestamp) {
-      createdDateStr = new Date(task.Timestamp).toLocaleDateString('uk-UA');
-    } else if (task.ID && !isNaN(task.ID) && task.ID.toString().length === 13) {
-      createdDateStr = new Date(Number(task.ID)).toLocaleDateString('uk-UA');
-    }
+    if (task.CreatedAt) { createdDateStr = new Date(task.CreatedAt).toLocaleDateString('uk-UA'); } 
+    else if (task.Timestamp) { createdDateStr = new Date(task.Timestamp).toLocaleDateString('uk-UA'); } 
+    else if (task.ID && !isNaN(task.ID) && task.ID.toString().length === 13) { createdDateStr = new Date(Number(task.ID)).toLocaleDateString('uk-UA'); }
     document.getElementById('view-created').innerText = createdDateStr;
 
     const descView = document.getElementById('desc-view');
     if (task.Description && task.Description.trim()) {
-      descView.innerText = task.Description;
-      descView.classList.remove('empty');
+      descView.innerText = task.Description; descView.classList.remove('empty');
     } else {
-      descView.innerText = 'Немає опису. Натисніть «Редагувати», щоб додати.';
-      descView.classList.add('empty');
+      descView.innerText = 'Немає опису. Натисніть «Редагувати», щоб додати.'; descView.classList.add('empty');
     }
     document.getElementById('desc-edit-area').style.display = 'none';
     document.getElementById('desc-view').style.display      = 'block';
     document.getElementById('desc-edit-btn').style.display  = 'inline-flex';
-    document.getElementById('desc-save-msg').style.display  = 'none';
 
     const initials = task.Responsible ? task.Responsible[0].toUpperCase() : '?';
     const avatarColor = getAvatarColor(task.Responsible);
-    document.getElementById('view-responsible').innerHTML =
-      `<div class="p-avatar p-avatar-lg" style="display:inline-flex;background-color:${avatarColor};color:#fff;">${initials}</div> ${task.Responsible||'—'}`;
+    document.getElementById('view-responsible').innerHTML = `<div class="p-avatar p-avatar-lg" style="display:inline-flex;background-color:${avatarColor};color:#fff;">${initials}</div> ${task.Responsible||'—'}`;
 
     const dlInput = document.getElementById('view-deadline-input');
     if (task.Deadline) {
       const d = new Date(task.Deadline);
       const tzoffset = d.getTimezoneOffset() * 60000;
       dlInput.value = (new Date(d.getTime() - tzoffset)).toISOString().slice(0, 16);
-    } else {
-      dlInput.value = '';
-    }
+    } else { dlInput.value = ''; }
     document.getElementById('deadline-save-msg').style.display = 'none';
 
     renderComments(task.Comments);
 
     const role = localStorage.getItem("userRole");
-    document.getElementById('approve-btn').style.display =
-      ((role==='manager'||role==='owner') && task.Status==='На погодження') ? 'block' : 'none';
-
+    document.getElementById('approve-btn').style.display = ((role==='manager'||role==='owner') && task.Status==='На погодження') ? 'block' : 'none';
     document.getElementById('task-modal').style.display = 'flex';
   }
 
   function toggleDescEdit() {
     const task = currentTasks.find(t => t.ID.toString() === openedTaskId.toString());
     document.getElementById('desc-edit-input').value  = (task && task.Description) ? task.Description : '';
-    document.getElementById('desc-view').style.display      = 'none';
+    document.getElementById('desc-view').style.display = 'none';
     document.getElementById('desc-edit-area').style.display = 'block';
-    document.getElementById('desc-edit-btn').style.display  = 'none';
+    document.getElementById('desc-edit-btn').style.display = 'none';
   }
 
   function cancelDescEdit() {
     document.getElementById('desc-edit-area').style.display = 'none';
-    document.getElementById('desc-view').style.display      = 'block';
-    document.getElementById('desc-edit-btn').style.display  = 'inline-flex';
+    document.getElementById('desc-view').style.display = 'block';
+    document.getElementById('desc-edit-btn').style.display = 'inline-flex';
   }
 
   async function saveDescription() {
     const newDesc = document.getElementById('desc-edit-input').value;
-    const res     = await apiRequest({ action:"updateDescription", taskId:openedTaskId, description:newDesc });
+    const res = await apiRequest({ action:"updateDescription", taskId:openedTaskId, description:newDesc });
     if(res.success) {
       const idx = currentTasks.findIndex(t => t.ID.toString() === openedTaskId.toString());
       if(idx > -1) currentTasks[idx].Description = newDesc;
@@ -888,8 +885,7 @@
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, url => {
       const clean = url.replace(/[.,!?)]+$/, '');
-      const trail = url.slice(clean.length);
-      return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="p-comment-link">${clean}</a>${trail}`;
+      return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="p-comment-link">${clean}</a>${url.slice(clean.length)}`;
     });
   }
 
@@ -898,22 +894,15 @@
     container.innerHTML = '';
     let comments = [];
     try { comments = JSON.parse(commentsJson); } catch(e) {}
-    if(!comments.length) {
-      container.innerHTML = '<span style="font-size:13px;color:var(--text-lo);font-style:italic">Коментарів ще немає.</span>';
-      return;
-    }
+    if(!comments.length) { container.innerHTML = '<span style="font-size:13px;color:var(--text-lo);font-style:italic">Коментарів ще немає.</span>'; return; }
     comments.forEach(c => {
       const dateStr = new Date(c.date).toLocaleDateString('uk-UA') + ' ' + new Date(c.date).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'});
-      const init    = c.user ? c.user[0].toUpperCase() : '?';
+      const init = c.user ? c.user[0].toUpperCase() : '?';
       const isResult = c.text && c.text.startsWith('✅ Результат:');
       const commentClass = isResult ? 'p-comment p-comment-result' : 'p-comment';
-
       const avatarColor = getAvatarColor(c.user);
-
-      const rawText   = c.text || '';
-      const escaped   = rawText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const withLinks = linkify(escaped);
-      const withBreaks = withLinks.replace(/\n/g, '<br>');
+      const escaped = (c.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const withBreaks = linkify(escaped).replace(/\n/g, '<br>');
 
       container.innerHTML += `
         <div class="${commentClass}">
@@ -930,15 +919,8 @@
   async function addComment() {
     const text = document.getElementById('new-comment').value.trim();
     if(!text) return;
-    
     document.getElementById('new-comment').value = '';
-    
-    const tempComment = {
-      user: localStorage.getItem("userName") || 'Ви',
-      date: new Date().toISOString(),
-      text: text
-    };
-    
+    const tempComment = { user: localStorage.getItem("userName") || 'Ви', date: new Date().toISOString(), text: text };
     const idx = currentTasks.findIndex(t => t.ID.toString() === openedTaskId.toString());
     if (idx > -1) {
       let parsedComments = [];
@@ -947,23 +929,15 @@
       currentTasks[idx].Comments = JSON.stringify(parsedComments);
       renderComments(currentTasks[idx].Comments);
     }
-
     apiRequest({ action:"addComment", taskId:openedTaskId, text }).then(res => {
       if(res.success && idx > -1) {
         currentTasks[idx].Comments = JSON.stringify(res.comments);
-        if(openedTaskId === currentTasks[idx].ID.toString()) {
-           renderComments(currentTasks[idx].Comments);
-        }
-      } else {
-        console.error("Помилка збереження на сервері:", res.error);
+        if(openedTaskId === currentTasks[idx].ID.toString()) renderComments(currentTasks[idx].Comments);
       }
-    }).catch(err => console.error("Помилка мережі:", err));
+    });
   }
 
-  async function approveTask() {
-    closeModal('task-modal');
-    openResultModal();
-  }
+  async function approveTask() { closeModal('task-modal'); openResultModal(); }
 
   document.querySelectorAll('.p-modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
@@ -976,26 +950,10 @@
 </script>
 
 <style>
-  .p-comment-link {
-    color: var(--accent);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    word-break: break-all;
-    transition: opacity .15s;
-  }
+  .p-comment-link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; transition: opacity .15s; }
   .p-comment-link:hover { opacity: .75; }
-
-  .p-comment-result {
-    background: var(--green-dim, #f0fdf4) !important;
-    border: 1px solid var(--green-border, #bbf7d0) !important;
-    border-radius: 10px;
-  }
-  .p-comment-result .p-comment-text {
-    color: #166534;
-    font-weight: 500;
-  }
-
-  #result-text:focus { border-color: var(--accent); }
+  .p-comment-result { background: var(--green-dim, #f0fdf4) !important; border: 1px solid var(--green-border, #bbf7d0) !important; border-radius: 10px; }
+  .p-comment-result .p-comment-text { color: #166534; font-weight: 500; }
 </style>
 
 </body>
