@@ -146,7 +146,6 @@
 
 <div id="board-screen" style="display:none">
   
-  <!-- БОКОВА ПАНЕЛЬ -->
   <aside class="p-sidebar">
     <a href="#" style="display: flex; align-items: center; gap: 12px; text-decoration: none; margin-bottom: 28px;">
       <div class="p-logo-mark" style="background: var(--accent); color:#fff; border-radius: 8px; width: 38px; height: 38px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">MKT</div>
@@ -176,7 +175,6 @@
     </div>
   </aside>
 
-  <!-- ОСНОВНА РОБОЧА ЗОНА -->
   <div class="p-main-wrapper">
     <div class="p-page" style="padding: 24px 32px; min-height: 100%;">
       <div id="stats-container" class="p-stats-grid" style="display:none">
@@ -246,7 +244,6 @@
       </select>
     </div>
 
-    <!-- РЕЖИМ ОДИНОЧНОЇ ЗАДАЧІ -->
     <div id="mode-single-fields">
       <div class="p-field">
         <label class="p-label">Коротка назва</label>
@@ -273,7 +270,6 @@
       </div>
     </div>
 
-    <!-- РЕЖИМ ПЛАНУ НА ДЕНЬ -->
     <div id="mode-bulk-fields" style="display:none">
       <div class="p-field">
         <label class="p-label">Оберіть дату для плану <span style="color:var(--red)">*</span></label>
@@ -285,13 +281,11 @@
           <span class="p-info-icon" title="Вкажіть час, до якого плануєте закрити кожну задачу. Це дозволить ефективно розподілити навантаження.">i</span>
         </label>
         <div id="bulk-tasks-container" style="display:flex; flex-direction:column; gap:10px;">
-          <!-- Поля генеруються через JS -->
-        </div>
+          </div>
         <button class="btn btn-ghost btn-sm" onclick="addBulkRow()" style="margin-top:12px; color:var(--accent);">＋ Додати ще задачу</button>
       </div>
     </div>
 
-    <!-- СПІЛЬНІ ПОЛЯ -->
     <div id="direction-responsible-fields">
       <div style="display:flex;gap:14px">
         <div class="p-field" style="flex:1">
@@ -322,7 +316,6 @@
         <span class="p-meta-value" id="view-created" style="color:var(--text-lo);font-weight:500;font-size:13.5px">—</span>
       </div>
       
-      <!-- ВІДПОВІДАЛЬНИЙ (ЗМОГА ЗМІНИ ДЛЯ OWNER) -->
       <div class="p-meta-item">
         <span class="p-meta-label">Відповідальний</span>
         <div style="display:flex;align-items:center;gap:6px">
@@ -378,7 +371,6 @@
       ✅ Погодити — перенести в «Готово»
     </button>
     
-    <!-- КНОПКА ВИДАЛЕННЯ ДЛЯ OWNER -->
     <button id="delete-btn" class="btn btn-danger btn-full btn-lg" style="display:none;margin-top:12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);" onclick="deleteTaskAction()">
       🗑 Видалити задачу
     </button>
@@ -431,14 +423,12 @@
   let pendingDoneElement = null;
   let pendingDoneFromCol = null;
 
-  // --- ЛОГІКА КАСТОМНОГО ВИПАДАЮЧОГО СПИСКУ ЧАСУ ---
+  // --- ЛОГІКА КАСТОМНОГО ВИПАДАЮЧОГО СПИСКУ ЧАСУ (ТІЛЬКИ ГОДИНИ) ---
   function generateCustomTimeOptions() {
     let options = '';
     for (let h = 8; h <= 23; h++) {
-      for (let m of ['00', '30']) {
-        const timeStr = `${h.toString().padStart(2, '0')}:${m}`;
-        options += `<div class="p-time-option" onclick="selectCustomTime(event, this, '${timeStr}')">${timeStr}</div>`;
-      }
+      const timeStr = `${h.toString().padStart(2, '0')}:00`;
+      options += `<div class="p-time-option" onclick="selectCustomTime(event, this, '${timeStr}')">${timeStr}</div>`;
     }
     return options;
   }
@@ -520,7 +510,7 @@
 
   function showBoard() {
     document.getElementById("login-screen").style.display  = "none";
-    document.getElementById("board-screen").style.display  = "flex"; // Активуємо Flex-макет сайдбару
+    document.getElementById("board-screen").style.display  = "flex";
     const name = localStorage.getItem("userName") || '';
     const role = localStorage.getItem("userRole") || '';
     
@@ -885,6 +875,7 @@
     if (id === 'create-modal') document.getElementById('new-deadline-date').style.borderColor = ''; 
   }
 
+  // --- ОНОВЛЕНИЙ SUBMIT ДЛЯ МАСОВОЇ ВІДПРАВКИ ---
   async function submitTask() {
     const isIdea      = document.getElementById('new-type').value === 'idea';
     const direction   = isIdea ? '' : document.getElementById('new-direction').value;
@@ -927,10 +918,8 @@
         btn.textContent = 'Створити план на день'; btn.disabled=false; return; 
       }
 
-      const promises = tasksToCreate.map(t => 
-        apiRequest({ action:"createTask", isIdea:false, title:t.title, description:"", direction, responsible, deadline:t.deadline })
-      );
-      await Promise.all(promises);
+      // Відправляємо всі задачі єдиним масивом, щоб бот надіслав одне спільне повідомлення
+      await apiRequest({ action:"bulkCreateTasks", isIdea:false, tasks: tasksToCreate, direction, responsible });
     }
 
     closeModal('create-modal');
