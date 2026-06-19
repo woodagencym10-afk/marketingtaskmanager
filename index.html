@@ -9,6 +9,69 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal.css">
   <style>
+    /* ПРИХОВУЄМО СТАРУ ШАПКУ */
+    .p-header { display: none !important; }
+
+    /* НОВИЙ МАКЕТ З ЛІВОЮ ПАНЕЛЛЮ */
+    #board-screen {
+      display: flex !important;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .p-sidebar {
+      width: 260px;
+      background: #171721; /* Темний колір, що пасує до вашої теми */
+      border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    
+    .p-main-wrapper {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: auto;
+      background: transparent;
+    }
+
+    /* СТИЛІ КНОПОК МЕНЮ В ПАНЕЛІ */
+    .p-nav-v { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .p-nav-btn-v {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      color: #9ca3af; text-decoration: none; border-radius: 10px; transition: 0.2s;
+      font-weight: 500; font-size: 15px;
+    }
+    .p-nav-btn-v:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .p-nav-btn-v.active { background: var(--accent, #6366f1); color: #fff; }
+
+    /* ІКОНКА-ПІДКАЗКА (i) */
+    .p-info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent, #818cf8);
+      border: 1px solid var(--accent, #6366f1);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: bold;
+      font-family: monospace;
+      margin-left: 8px;
+      cursor: help;
+      transition: 0.2s;
+    }
+    .p-info-icon:hover {
+      background: var(--accent, #6366f1);
+      color: #fff;
+    }
+
     /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК ЧАСУ */
     .p-time-picker {
       position: relative;
@@ -30,16 +93,14 @@
       right: 0;
       max-height: 180px;
       overflow-y: auto;
-      background: #1f2937; /* Темний фон, що пасує до порталу */
+      background: #1f2937;
       border: 1px solid var(--accent, #6366f1);
       border-radius: 8px;
       z-index: 99999;
       display: none;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
-    .p-time-list.open {
-      display: block;
-    }
+    .p-time-list.open { display: block; }
     .p-time-option {
       padding: 8px;
       text-align: center;
@@ -51,7 +112,6 @@
       background: var(--accent, #6366f1);
       color: #ffffff;
     }
-    /* Акуратний скролбар для списку часу */
     .p-time-list::-webkit-scrollbar { width: 6px; }
     .p-time-list::-webkit-scrollbar-track { background: transparent; }
     .p-time-list::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
@@ -85,89 +145,85 @@
 </div>
 
 <div id="board-screen" style="display:none">
-  <header class="p-header">
-    <a class="p-logo" href="#">
-      <div class="p-logo-mark">MKT</div>
-      <div class="p-logo-text">Marketing <span>Portal</span></div>
+  
+  <!-- НОВА БОКОВА ПАНЕЛЬ -->
+  <aside class="p-sidebar">
+    <a href="#" style="display: flex; align-items: center; gap: 12px; text-decoration: none; margin-bottom: 28px;">
+      <div class="p-logo-mark" style="background: var(--accent); color:#fff; border-radius: 8px; width: 38px; height: 38px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">MKT</div>
+      <div class="p-logo-text" style="font-family: Syne, sans-serif; font-weight: 700; color: #fff; font-size: 18px; line-height:1.2;">
+        Marketing<br><span style="color:var(--accent); font-size: 13px;">Portal</span>
+      </div>
     </a>
-    <div class="p-header-sep"></div>
-    <nav class="p-nav">
-      <a href="index.html" class="p-nav-btn active"><span class="nav-icon">📋</span> Задачі</a>
-      <a href="knowledge.html" class="p-nav-btn"><span class="nav-icon">📚</span> База знань</a>
+
+    <button class="btn btn-primary btn-full" onclick="openCreateModal()" style="padding: 12px 16px; margin-bottom: 16px;">
+      ＋ Створити задачу
+    </button>
+
+    <nav class="p-nav-v">
+      <a href="index.html" class="p-nav-btn-v active"><span class="nav-icon">📋</span> Дошка задач</a>
+      <a href="knowledge.html" class="p-nav-btn-v"><span class="nav-icon">📚</span> База знань</a>
     </nav>
-    <div class="p-header-right">
-      <div class="p-user-badge">
-        <div class="p-user-avatar" id="user-avatar-initial" style="color:#fff;">?</div>
-        <span id="user-info">—</span>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="openCreateModal()">＋ Створити</button>
-      <button class="btn btn-danger btn-sm" onclick="logout()">Вийти</button>
-    </div>
-  </header>
 
-  <div class="p-page">
-    <div id="stats-container" class="p-stats-grid" style="display:none">
-      <div class="p-stat"><div class="p-stat-label">💡 Ідеї</div><div class="p-stat-value" id="stat-ideas">0</div></div>
-      <div class="p-stat"><div class="p-stat-label">📝 Треба зробити</div><div class="p-stat-value" id="stat-todo">0</div></div>
-      <div class="p-stat"><div class="p-stat-label">⚙️ В роботі</div><div class="p-stat-value" id="stat-inprogress">0</div></div>
-      <div class="p-stat is-amber"><div class="p-stat-label">👀 На погодженні</div><div class="p-stat-value" id="stat-pending">0</div></div>
-      <div class="p-stat"><div class="p-stat-label">🔧 Потребує правок</div><div class="p-stat-value" id="stat-revision">0</div></div>
-      <div class="p-stat is-red"><div class="p-stat-label">🔴 Прострочені</div><div class="p-stat-value" id="stat-overdue">0</div></div>
-      <div class="p-stat is-green"><div class="p-stat-label">✅ Готово</div><div class="p-stat-value" id="stat-done">0</div></div>
+    <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+      <div class="p-user-badge" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: transparent; padding:0;">
+        <div class="p-user-avatar" id="user-avatar-initial" style="width: 36px; height: 36px; color: #fff; font-size:15px;">?</div>
+        <div style="display: flex; flex-direction: column; flex:1; overflow:hidden;">
+          <span id="user-info-name" style="font-size: 14px; font-weight: 600; color: #fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</span>
+          <span id="user-info-role" style="font-size: 12px; color: #9ca3af; text-transform: capitalize;">—</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="logout()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);">Вийти з акаунту</button>
     </div>
+  </aside>
 
-    <div id="filters-container" class="p-filters" style="display:none">
-      <label>Період:</label>
-      <input type="date" class="p-input" id="date-start" onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
-      <span style="color:var(--text-lo);font-size:13px;">—</span>
-      <input type="date" class="p-input" id="date-end"   onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
-      <div class="p-filter-sep"></div>
-      <select class="p-select" id="filter-responsible" onchange="applyFilters()"><option value="">Всі виконавці</option></select>
-      <select class="p-select" id="filter-direction"   onchange="applyFilters()"><option value="">Всі напрямки</option></select>
-    </div>
+  <!-- ОСНОВНА РОБОЧА ЗОНА -->
+  <div class="p-main-wrapper">
+    <div class="p-page" style="padding: 24px 32px; min-height: 100%;">
+      <div id="stats-container" class="p-stats-grid" style="display:none">
+        <div class="p-stat"><div class="p-stat-label">💡 Ідеї</div><div class="p-stat-value" id="stat-ideas">0</div></div>
+        <div class="p-stat"><div class="p-stat-label">📝 Треба зробити</div><div class="p-stat-value" id="stat-todo">0</div></div>
+        <div class="p-stat"><div class="p-stat-label">⚙️ В роботі</div><div class="p-stat-value" id="stat-inprogress">0</div></div>
+        <div class="p-stat is-amber"><div class="p-stat-label">👀 На погодженні</div><div class="p-stat-value" id="stat-pending">0</div></div>
+        <div class="p-stat"><div class="p-stat-label">🔧 Потребує правок</div><div class="p-stat-value" id="stat-revision">0</div></div>
+        <div class="p-stat is-red"><div class="p-stat-label">🔴 Прострочені</div><div class="p-stat-value" id="stat-overdue">0</div></div>
+        <div class="p-stat is-green"><div class="p-stat-label">✅ Готово</div><div class="p-stat-value" id="stat-done">0</div></div>
+      </div>
 
-    <div class="p-board">
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">💡 Ідеї</span>
-          <span class="p-col-count" id="count-Ідеї">0</span>
-        </div>
-        <div class="p-task-list" id="col-Ідеї" data-status="Ідеї"></div>
+      <div id="filters-container" class="p-filters" style="display:none">
+        <label>Період:</label>
+        <input type="date" class="p-input" id="date-start" onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <span style="color:var(--text-lo);font-size:13px;">—</span>
+        <input type="date" class="p-input" id="date-end"   onchange="loadTasks()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <div class="p-filter-sep"></div>
+        <select class="p-select" id="filter-responsible" onchange="applyFilters()"><option value="">Всі виконавці</option></select>
+        <select class="p-select" id="filter-direction"   onchange="applyFilters()"><option value="">Всі напрямки</option></select>
       </div>
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">📝 Треба зробити</span>
-          <span class="p-col-count" id="count-Треба-зробити">0</span>
+
+      <div class="p-board">
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">💡 Ідеї</span><span class="p-col-count" id="count-Ідеї">0</span></div>
+          <div class="p-task-list" id="col-Ідеї" data-status="Ідеї"></div>
         </div>
-        <div class="p-task-list" id="col-Треба зробити" data-status="Треба зробити"></div>
-      </div>
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">⚙️ В роботі</span>
-          <span class="p-col-count" id="count-В-роботі">0</span>
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">📝 Треба зробити</span><span class="p-col-count" id="count-Треба-зробити">0</span></div>
+          <div class="p-task-list" id="col-Треба зробити" data-status="Треба зробити"></div>
         </div>
-        <div class="p-task-list" id="col-В роботі" data-status="В роботі"></div>
-      </div>
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">👀 На погодження</span>
-          <span class="p-col-count" id="count-На-погодження">0</span>
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">⚙️ В роботі</span><span class="p-col-count" id="count-В-роботі">0</span></div>
+          <div class="p-task-list" id="col-В роботі" data-status="В роботі"></div>
         </div>
-        <div class="p-task-list" id="col-На погодження" data-status="На погодження"></div>
-      </div>
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">⚠️ Потребує правок</span>
-          <span class="p-col-count" id="count-Потребує-правок">0</span>
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">👀 На погодження</span><span class="p-col-count" id="count-На-погодження">0</span></div>
+          <div class="p-task-list" id="col-На погодження" data-status="На погодження"></div>
         </div>
-        <div class="p-task-list" id="col-Потребує правок" data-status="Потребує правок"></div>
-      </div>
-      <div class="p-column">
-        <div class="p-column-header">
-          <span class="p-column-title">✅ Готово</span>
-          <span class="p-col-count" id="count-Готово">0</span>
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">⚠️ Потребує правок</span><span class="p-col-count" id="count-Потребує-правок">0</span></div>
+          <div class="p-task-list" id="col-Потребує правок" data-status="Потребує правок"></div>
         </div>
-        <div class="p-task-list" id="col-Готово" data-status="Готово"></div>
+        <div class="p-column">
+          <div class="p-column-header"><span class="p-column-title">✅ Готово</span><span class="p-col-count" id="count-Готово">0</span></div>
+          <div class="p-task-list" id="col-Готово" data-status="Готово"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -190,6 +246,7 @@
       </select>
     </div>
 
+    <!-- РЕЖИМ ОДИНОЧНОЇ ЗАДАЧІ -->
     <div id="mode-single-fields">
       <div class="p-field">
         <label class="p-label">Коротка назва</label>
@@ -200,7 +257,10 @@
         <textarea class="p-textarea" id="new-description" rows="3" placeholder="ТЗ, посилання, деталі..."></textarea>
       </div>
       <div id="deadline-container" class="p-field">
-        <label class="p-label">Дедлайн (дата та час) <span style="color:var(--red)">*</span></label>
+        <label class="p-label" style="display:flex; align-items:center;">
+          Дедлайн (дата та час) <span style="color:var(--red); margin-left:4px;">*</span>
+          <span class="p-info-icon" title="Орієнтовний час, до якого ви плануєте виконати задачу. Це допоможе краще спланувати ваш робочий день.">i</span>
+        </label>
         <div style="display:flex; gap:10px;">
           <input class="p-input" type="date" id="new-deadline-date" style="flex:1;">
           
@@ -209,24 +269,29 @@
             <input type="hidden" id="new-deadline-time" value="09:00">
             <div class="p-time-list" id="new-time-list"></div>
           </div>
-
         </div>
       </div>
     </div>
 
+    <!-- РЕЖИМ ПЛАНУ НА ДЕНЬ -->
     <div id="mode-bulk-fields" style="display:none">
       <div class="p-field">
         <label class="p-label">Оберіть дату для плану <span style="color:var(--red)">*</span></label>
         <input class="p-input" type="date" id="bulk-date">
       </div>
       <div class="p-field">
-        <label class="p-label">Задачі та час виконання</label>
+        <label class="p-label" style="display:flex; align-items:center;">
+          Задачі та час виконання
+          <span class="p-info-icon" title="Вкажіть час, до якого плануєте закрити кожну задачу. Це дозволить ефективно розподілити навантаження.">i</span>
+        </label>
         <div id="bulk-tasks-container" style="display:flex; flex-direction:column; gap:10px;">
-          </div>
+          <!-- Поля генеруються через JS -->
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="addBulkRow()" style="margin-top:12px; color:var(--accent);">＋ Додати ще задачу</button>
       </div>
     </div>
 
+    <!-- СПІЛЬНІ ПОЛЯ -->
     <div id="direction-responsible-fields">
       <div style="display:flex;gap:14px">
         <div class="p-field" style="flex:1">
@@ -261,14 +326,17 @@
         <span class="p-meta-value" id="view-responsible"></span>
       </div>
       <div class="p-meta-item" style="flex-grow:1">
-        <span class="p-meta-label">Дедлайн</span>
+        <span class="p-meta-label" style="display:flex; align-items:center;">
+          Дедлайн
+          <span class="p-info-icon" style="width:14px; height:14px; font-size:9px; margin-left:4px;" title="Орієнтовний час виконання задачі.">i</span>
+        </span>
         <div style="display:flex;align-items:center;gap:6px">
           <input type="date" id="view-deadline-date" class="p-input p-inline-date"
                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600"
                  onchange="updateTaskDeadline()">
                  
           <div class="p-time-picker" onclick="toggleTimePicker(this)" style="width:80px; margin:0;">
-            <div class="p-time-display p-input p-inline-date" style="margin:0; padding:4px 8px; font-size:13.5px; font-weight:600;">09:00</div>
+            <div class="p-time-display p-input p-inline-date" style="margin:0; padding:4px 8px !important; font-size:13.5px; font-weight:600; min-height:auto;">09:00</div>
             <input type="hidden" id="view-deadline-time" value="09:00">
             <div class="p-time-list" id="view-time-list"></div>
           </div>
@@ -371,27 +439,23 @@
     hiddenInput.value = timeStr;
     wrapper.querySelector('.p-time-list').classList.remove('open');
     
-    // Якщо зміна відбувається у перегляді задачі - одразу зберігаємо
     if (hiddenInput.id === 'view-deadline-time') {
       updateTaskDeadline();
     }
   }
 
   function toggleTimePicker(wrapper) {
-    // Закриваємо всі інші відкриті списки
     document.querySelectorAll('.p-time-list').forEach(l => {
       if(l !== wrapper.querySelector('.p-time-list')) l.classList.remove('open');
     });
     wrapper.querySelector('.p-time-list').classList.toggle('open');
   }
 
-  // Закриваємо список при кліку поза ним
   document.addEventListener('click', e => {
     if (!e.target.closest('.p-time-picker')) {
       document.querySelectorAll('.p-time-list').forEach(l => l.classList.remove('open'));
     }
   });
-
 
   // --- ФУНКЦІЯ АВАТАРОК ---
   function getAvatarColor(name) {
@@ -405,7 +469,6 @@
   }
 
   window.onload = () => {
-    // Генеруємо опції для модалок
     document.getElementById('new-time-list').innerHTML = generateCustomTimeOptions();
     document.getElementById('view-time-list').innerHTML = generateCustomTimeOptions();
     if (localStorage.getItem("userToken")) showBoard();
@@ -445,11 +508,16 @@
 
   function showBoard() {
     document.getElementById("login-screen").style.display  = "none";
-    document.getElementById("board-screen").style.display  = "block";
+    document.getElementById("board-screen").style.display  = "flex"; // Активуємо Flex-макет сайдбару
     const name = localStorage.getItem("userName") || '';
     const role = localStorage.getItem("userRole") || '';
-    document.getElementById("user-info").innerText = `${name} · ${role}`;
     
+    // Оновлення сайдбару
+    const nameEl = document.getElementById("user-info-name");
+    if(nameEl) nameEl.innerText = name || "Користувач";
+    const roleEl = document.getElementById("user-info-role");
+    if(roleEl) roleEl.innerText = role;
+
     const av = document.getElementById("user-avatar-initial");
     if(av) {
       av.innerText = name ? name[0].toUpperCase() : '?';
@@ -765,7 +833,7 @@
     document.getElementById('submit-btn').textContent = mode==='single' ? 'Створити картку' : 'Створити план на день';
 
     if (mode === 'bulk') {
-      document.getElementById('type-container').style.display = 'none'; // План на день - це завжди задачі
+      document.getElementById('type-container').style.display = 'none';
       document.getElementById('new-type').value = 'task';
       toggleIdeaMode();
 
@@ -841,7 +909,6 @@
         btn.textContent = 'Створити план на день'; btn.disabled=false; return; 
       }
 
-      // Відправляємо кожну задачу з її точним часом
       const promises = tasksToCreate.map(t => 
         apiRequest({ action:"createTask", isIdea:false, title:t.title, description:"", direction, responsible, deadline:t.deadline })
       );
