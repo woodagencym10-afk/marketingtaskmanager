@@ -8,6 +8,54 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal.css">
+  <style>
+    /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК ЧАСУ */
+    .p-time-picker {
+      position: relative;
+      user-select: none;
+    }
+    .p-time-display {
+      text-align: center !important;
+      padding: 7px 12px !important;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+    }
+    .p-time-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #1f2937; /* Темний фон, що пасує до порталу */
+      border: 1px solid var(--accent, #6366f1);
+      border-radius: 8px;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .p-time-list.open {
+      display: block;
+    }
+    .p-time-option {
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .p-time-option:hover {
+      background: var(--accent, #6366f1);
+      color: #ffffff;
+    }
+    /* Акуратний скролбар для списку часу */
+    .p-time-list::-webkit-scrollbar { width: 6px; }
+    .p-time-list::-webkit-scrollbar-track { background: transparent; }
+    .p-time-list::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+  </style>
 </head>
 <body>
 
@@ -142,7 +190,6 @@
       </select>
     </div>
 
-    <!-- РЕЖИМ ОДИНОЧНОЇ ЗАДАЧІ -->
     <div id="mode-single-fields">
       <div class="p-field">
         <label class="p-label">Коротка назва</label>
@@ -156,12 +203,17 @@
         <label class="p-label">Дедлайн (дата та час) <span style="color:var(--red)">*</span></label>
         <div style="display:flex; gap:10px;">
           <input class="p-input" type="date" id="new-deadline-date" style="flex:1;">
-          <select class="p-select" id="new-deadline-time" style="width:120px; text-align:center; text-align-last:center;"></select>
+          
+          <div class="p-time-picker" id="new-time-picker" onclick="toggleTimePicker(this)" style="width:120px;">
+            <div class="p-time-display p-input">09:00</div>
+            <input type="hidden" id="new-deadline-time" value="09:00">
+            <div class="p-time-list" id="new-time-list"></div>
+          </div>
+
         </div>
       </div>
     </div>
 
-    <!-- РЕЖИМ ПЛАНУ НА ДЕНЬ -->
     <div id="mode-bulk-fields" style="display:none">
       <div class="p-field">
         <label class="p-label">Оберіть дату для плану <span style="color:var(--red)">*</span></label>
@@ -170,13 +222,11 @@
       <div class="p-field">
         <label class="p-label">Задачі та час виконання</label>
         <div id="bulk-tasks-container" style="display:flex; flex-direction:column; gap:10px;">
-          <!-- Поля генеруються через JS -->
-        </div>
+          </div>
         <button class="btn btn-ghost btn-sm" onclick="addBulkRow()" style="margin-top:12px; color:var(--accent);">＋ Додати ще задачу</button>
       </div>
     </div>
 
-    <!-- СПІЛЬНІ ПОЛЯ -->
     <div id="direction-responsible-fields">
       <div style="display:flex;gap:14px">
         <div class="p-field" style="flex:1">
@@ -216,9 +266,13 @@
           <input type="date" id="view-deadline-date" class="p-input p-inline-date"
                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600"
                  onchange="updateTaskDeadline()">
-          <select id="view-deadline-time" class="p-select p-inline-date" 
-                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600; text-align:center; text-align-last:center;"
-                  onchange="updateTaskDeadline()"></select>
+                 
+          <div class="p-time-picker" onclick="toggleTimePicker(this)" style="width:80px; margin:0;">
+            <div class="p-time-display p-input p-inline-date" style="margin:0; padding:4px 8px; font-size:13.5px; font-weight:600;">09:00</div>
+            <input type="hidden" id="view-deadline-time" value="09:00">
+            <div class="p-time-list" id="view-time-list"></div>
+          </div>
+
           <span id="deadline-save-msg" class="p-save-chip">✔ Збережено</span>
         </div>
       </div>
@@ -297,18 +351,47 @@
   let pendingDoneElement = null;
   let pendingDoneFromCol = null;
 
-  // --- ФУНКЦІЯ ГЕНЕРАЦІЇ ВИПАДНОГО СПИСКУ ЧАСУ (КОЖНІ 30 ХВ) ---
-  function generateTimeOptions(defaultTime = "09:00") {
+  // --- ЛОГІКА КАСТОМНОГО ВИПАДАЮЧОГО СПИСКУ ЧАСУ ---
+  function generateCustomTimeOptions() {
     let options = '';
     for (let h = 8; h <= 23; h++) {
       for (let m of ['00', '30']) {
         const timeStr = `${h.toString().padStart(2, '0')}:${m}`;
-        const selected = timeStr === defaultTime ? 'selected' : '';
-        options += `<option value="${timeStr}" ${selected}>${timeStr}</option>`;
+        options += `<div class="p-time-option" onclick="selectCustomTime(event, this, '${timeStr}')">${timeStr}</div>`;
       }
     }
     return options;
   }
+
+  function selectCustomTime(e, el, timeStr) {
+    e.stopPropagation();
+    const wrapper = el.closest('.p-time-picker');
+    wrapper.querySelector('.p-time-display').innerText = timeStr;
+    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+    hiddenInput.value = timeStr;
+    wrapper.querySelector('.p-time-list').classList.remove('open');
+    
+    // Якщо зміна відбувається у перегляді задачі - одразу зберігаємо
+    if (hiddenInput.id === 'view-deadline-time') {
+      updateTaskDeadline();
+    }
+  }
+
+  function toggleTimePicker(wrapper) {
+    // Закриваємо всі інші відкриті списки
+    document.querySelectorAll('.p-time-list').forEach(l => {
+      if(l !== wrapper.querySelector('.p-time-list')) l.classList.remove('open');
+    });
+    wrapper.querySelector('.p-time-list').classList.toggle('open');
+  }
+
+  // Закриваємо список при кліку поза ним
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.p-time-picker')) {
+      document.querySelectorAll('.p-time-list').forEach(l => l.classList.remove('open'));
+    }
+  });
+
 
   // --- ФУНКЦІЯ АВАТАРОК ---
   function getAvatarColor(name) {
@@ -322,9 +405,9 @@
   }
 
   window.onload = () => {
-    // Одразу генеруємо час для модалок
-    document.getElementById('new-deadline-time').innerHTML = generateTimeOptions();
-    document.getElementById('view-deadline-time').innerHTML = generateTimeOptions();
+    // Генеруємо опції для модалок
+    document.getElementById('new-time-list').innerHTML = generateCustomTimeOptions();
+    document.getElementById('view-time-list').innerHTML = generateCustomTimeOptions();
     if (localStorage.getItem("userToken")) showBoard();
   };
 
@@ -649,9 +732,15 @@
     row.style.gap = '8px';
     row.innerHTML = `
       <input type="text" class="p-input bulk-title" placeholder="Назва задачі" style="flex:1;">
-      <select class="p-select bulk-time" style="width:100px; text-align:center; text-align-last:center;">
-        ${generateTimeOptions()}
-      </select>
+      
+      <div class="p-time-picker" onclick="toggleTimePicker(this)" style="width:100px;">
+        <div class="p-time-display p-input">09:00</div>
+        <input type="hidden" class="bulk-time" value="09:00">
+        <div class="p-time-list">
+          ${generateCustomTimeOptions()}
+        </div>
+      </div>
+
       <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--red)">✕</button>
     `;
     container.appendChild(row);
@@ -695,7 +784,10 @@
   function openCreateModal() {
     document.getElementById('new-type').value = 'task';
     document.getElementById('new-deadline-date').value = new Date().toISOString().split('T')[0];
+    
     document.getElementById('new-deadline-time').value = '09:00';
+    document.getElementById('new-deadline-time').previousElementSibling.innerText = '09:00';
+
     setCreateMode('single');
     toggleIdeaMode();
     document.getElementById('create-modal').style.display = 'flex';
@@ -809,10 +901,14 @@
       const tzoffset = d.getTimezoneOffset() * 60000;
       const isoStr = (new Date(d.getTime() - tzoffset)).toISOString();
       dateInput.value = isoStr.slice(0, 10);
-      timeInput.value = isoStr.slice(11, 16);
+      
+      const timeVal = isoStr.slice(11, 16);
+      timeInput.value = timeVal;
+      timeInput.previousElementSibling.innerText = timeVal;
     } else {
       dateInput.value = '';
       timeInput.value = '09:00';
+      timeInput.previousElementSibling.innerText = '09:00';
     }
     document.getElementById('deadline-save-msg').style.display = 'none';
 
