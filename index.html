@@ -156,7 +156,7 @@
         <label class="p-label">Дедлайн (дата та час) <span style="color:var(--red)">*</span></label>
         <div style="display:flex; gap:10px;">
           <input class="p-input" type="date" id="new-deadline-date" style="flex:1;">
-          <select class="p-select" id="new-deadline-time" style="width:120px;"></select>
+          <select class="p-select" id="new-deadline-time" style="width:120px; text-align:center; text-align-last:center;"></select>
         </div>
       </div>
     </div>
@@ -217,7 +217,7 @@
                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600"
                  onchange="updateTaskDeadline()">
           <select id="view-deadline-time" class="p-select p-inline-date" 
-                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600"
+                  style="margin:0;width:auto;padding:4px 8px;font-size:13.5px;font-weight:600; text-align:center; text-align-last:center;"
                   onchange="updateTaskDeadline()"></select>
           <span id="deadline-save-msg" class="p-save-chip">✔ Збережено</span>
         </div>
@@ -298,7 +298,7 @@
   let pendingDoneFromCol = null;
 
   // --- ФУНКЦІЯ ГЕНЕРАЦІЇ ВИПАДНОГО СПИСКУ ЧАСУ (КОЖНІ 30 ХВ) ---
-  function generateTimeOptions(defaultTime = "18:00") {
+  function generateTimeOptions(defaultTime = "09:00") {
     let options = '';
     for (let h = 8; h <= 23; h++) {
       for (let m of ['00', '30']) {
@@ -649,7 +649,7 @@
     row.style.gap = '8px';
     row.innerHTML = `
       <input type="text" class="p-input bulk-title" placeholder="Назва задачі" style="flex:1;">
-      <select class="p-select bulk-time" style="width:100px;">
+      <select class="p-select bulk-time" style="width:100px; text-align:center; text-align-last:center;">
         ${generateTimeOptions()}
       </select>
       <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--red)">✕</button>
@@ -695,7 +695,7 @@
   function openCreateModal() {
     document.getElementById('new-type').value = 'task';
     document.getElementById('new-deadline-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('new-deadline-time').value = '18:00';
+    document.getElementById('new-deadline-time').value = '09:00';
     setCreateMode('single');
     toggleIdeaMode();
     document.getElementById('create-modal').style.display = 'flex';
@@ -812,7 +812,7 @@
       timeInput.value = isoStr.slice(11, 16);
     } else {
       dateInput.value = '';
-      timeInput.value = '18:00';
+      timeInput.value = '09:00';
     }
     document.getElementById('deadline-save-msg').style.display = 'none';
 
